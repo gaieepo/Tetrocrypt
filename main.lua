@@ -3,74 +3,43 @@ Inspect = require 'libraries/inspect/inspect'
 
 -- Libraries
 fn = require 'libraries/Moses/moses'
+Stateful = require 'libraries/stateful/stateful'
 Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
-Class = require 'libraries/middleclass/middleclass'
+class = require 'libraries/middleclass/middleclass'
 
-require 'Entity'
-require 'field'
-require 'piece'
 require 'globals'
 require 'utils'
+require 'Entity'
+require 'game'
+require 'field'
+require 'piece'
 
 function love.load()
-  -- Env
+  -- Main Env
 
-  -- Game Entities
-  field = Field:new(startx, starty)
-  piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
-
-  -- Input
+  -- Global Input Handler
   input = Input()
-  input:bind('escape', function() love.event.quit() end)
-  input:bind('backspace', function()
-    field = Field:new(startx, starty)
-    piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
-  end)
 
-  input:bind('w', 'harddrop')
-  input:bind('a', 'move_left')
-  input:bind('s', 'softdrop')
-  input:bind('d', 'move_right')
-  input:bind('k', 'piece_rotate_right')
-  input:bind('m', 'piece_rotate_left')
-  input:bind('l', 'piece_rotate_180')
-  for i=1, #piece_ids do input:bind(tostring(i), 'debug_switch_piece_' .. i) end
+  game = Game:new()
 end
 
 function love.update(dt)
   -- Timer.update(dt) -- global timer
-  field:update(dt)
-  piece:update(dt)
+  game:update(dt)
 end
 
 function love.draw()
-  love.graphics.setBackgroundColor(background_color)
-  love.graphics.setColor(grid_color)
-
-  -- Field
-  field:draw()
-
-  -- Piece
-  piece:draw()
+  game:draw()
 end
 
-function love.keypressed(key, scancode, isrepeat)
-  -- love.keyboard.setKeyRepeat(false)
-  -- if key == 'k' then
-  --   piece:rotateRight()
-  -- elseif key == 'm' then
-  --   piece:rotateLeft()
-  -- elseif key == 'l' then
-  --   piece:rotate180()
-  -- elseif tonumber(key) ~= nil and tonumber(key) >= 1 and tonumber(key) <= 7 and piece.id ~= piece_ids[tonumber(key)] then
-  --   piece.id = piece_ids[tonumber(key)]
-  --   piece.rot = 0
-  -- end
-end
+-- function love.keypressed(key, scancode, isrepeat)
+--   game:keypressed(key, scancode, isrepeat)
+--   -- love.keyboard.setKeyRepeat(false)
+-- end
 
 function love.run()
-  -- Random
+  -- Random Seed
   if love.math then love.math.setRandomSeed(42) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end

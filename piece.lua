@@ -1,4 +1,4 @@
-Piece = Class('Piece', Entity)
+Piece = class('Piece', Entity)
 
 function Piece:initialize(field, id, x, y, rot)
   Piece.super:initialize(self)

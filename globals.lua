@@ -3,7 +3,8 @@ frame_time = 1/60 -- (second)
 gravity = 1
 
 -- Colors
-background_color = {100/255, 10/255, 10/255}
+session_background_color = {100/255, 10/255, 10/255}
+pause_background_color = {10/255, 10/255, 10/255}
 grid_color = {200/255, 200/255, 200/255}
 block_colors = {
   ['E'] = {50/255, 50/255, 50/255},

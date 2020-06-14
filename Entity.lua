@@ -1,4 +1,4 @@
-Entity = Class('Entity')
+Entity = class('Entity')
 
 function Entity:initialize()
   local opts = opts or {}

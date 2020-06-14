@@ -1,4 +1,4 @@
-Field = Class('Field', Entity)
+Field = class('Field', Entity)
 
 function Field:initialize(sx, sy)
   Field.super.initialize(self)
