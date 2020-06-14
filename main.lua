@@ -22,11 +22,13 @@ function love.load()
 
   -- Input
   input = Input()
-  input:bind('escape', function()
-    love.event.quit()
+  input:bind('escape', function() love.event.quit() end)
+  input:bind('backspace', function()
+    field = Field:new(startx, starty)
+    piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
   end)
 
-  -- input:bind('w', 'harddrop')
+  input:bind('w', 'harddrop')
   input:bind('a', 'move_left')
   input:bind('s', 'softdrop')
   input:bind('d', 'move_right')

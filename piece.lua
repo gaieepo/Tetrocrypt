@@ -23,6 +23,8 @@ end
 function Piece:update(dt)
   Piece.super.update(self, dt)
 
+  -- Input handler
+  if input:pressed('harddrop') then self:harddrop() end
   if input:down('move_left', self.arr_delay, self.shift_delay) then
     if not self:collide(self.x - 1, nil, nil, nil) then
       self.x = self.x - 1
@@ -75,20 +77,25 @@ function Piece:collide(x, y, rot, field)
   for i = 1, num_piece_blocks do
     local x2 = x + piece_xs[self.id][rot + 1][i]
     local y2 = y - piece_ys[self.id][rot + 1][i]
-
-    if x2 > h_grids or y2 < 1 then
-      return true
-    end
-
-    if field.board[y2][x2] ~= 0 then
-      return true
-    end
+    if x2 > h_grids or y2 < 1 then return true end
+    if field.board[y2][x2] ~= 0 then return true end
   end
-
   return false
 end
 
 -- Movement --
+function Piece:harddrop()
+  local y = self.y
+  while not self:collide(nil, y - 1, nil, nil) do y = y - 1 end
+
+  -- lock
+  for i = 1, num_piece_blocks do
+    local x2 = self.x + piece_xs[self.id][self.rot + 1][i]
+    local y2 = y - piece_ys[self.id][self.rot + 1][i]
+    self.field.board[y2][x2] = piece_indices[self.id]
+  end
+end
+
 function Piece:rotateRight()
   local rot = (self.rot + 1) % 4
   if not self:collide(nil, nil, rot, nil) then
