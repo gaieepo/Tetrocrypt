@@ -1,5 +1,9 @@
+-- Constants
+frame_time = 1/60 -- (second)
+gravity = 10
+
 -- Colors
-background_color = {10/255, 10/255, 10/255}
+background_color = {100/255, 10/255, 10/255}
 grid_color = {200/255, 200/255, 200/255}
 block_colors = {
   ['E'] = {50/255, 50/255, 50/255},
@@ -13,14 +17,24 @@ block_colors = {
   ['I'] = {0/255, 240/255, 240/255},
 }
 
-grid_size = 32
+-- Grid Position
+grid_size = 16
 h_grids = 10
 v_grids = 20
-startx = 20
-starty = 20
+x_grids = 20
+spawnx = 4
+spawny = 22
+
+startx = 20 -- (pixel)
+starty = 660 -- (pixel)
+
+-- Field
+garbage_block_value = 10
 
 -- Piece
+num_piece_blocks = 4
 pieces = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
+default_rot = 0
 piece_xs = {
   ['S'] = {{2, 1, 1, 0}, {2, 2, 1, 1}, {0, 1, 1, 2}, {0, 0, 1, 1}},
   ['Z'] = {{0, 1, 1, 2}, {2, 2, 1, 1}, {2, 1, 1, 0}, {0, 0, 1, 1}},
