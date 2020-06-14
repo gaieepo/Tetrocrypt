@@ -12,6 +12,9 @@ function Field:initialize(sx, sy)
     end
     self.board[r] = row
   end
+
+  -- Debug
+  self:debugTSpin()
 end
 
 function Field:draw()
@@ -23,7 +26,7 @@ function Field:draw()
       elseif self.board[i][j] == garbage_block_value then
         love.graphics.setColor(block_colors['B'])
       else
-        love.graphics.setColor(block_colors[pieces[self.board[i][j]]])
+        love.graphics.setColor(block_colors[piece_ids[self.board[i][j]]])
       end
       love.graphics.rectangle('fill',
                               self.sx + (j - 1) * grid_size, self.sy - i * grid_size,
@@ -41,6 +44,7 @@ function Field:draw()
                      self.sx + h_grids * grid_size, self.sy - v_grids * grid_size)
 end
 
+-- Debug
 function Field:debugGarbage(height)
   local height = height or 5
   for r = 1, height do
@@ -48,4 +52,16 @@ function Field:debugGarbage(height)
       self.board[r][c] = love.math.random() < 0.3 and garbage_block_value or 0
     end
   end
+end
+
+function Field:debugTSpin()
+  local g = function(v) return v * garbage_block_value end
+  self.board[1] = fn.mapi({1, 1, 0, 1, 1, 1, 1, 1, 1, 1}, g)
+  self.board[2] = fn.mapi({1, 1, 0, 1, 1, 1, 1, 1, 1, 1}, g)
+  self.board[3] = fn.mapi({1, 0, 0, 0, 1, 1, 1, 1, 1, 1}, g)
+  self.board[4] = fn.mapi({1, 0, 0, 1, 1, 1, 1, 1, 1, 1}, g)
+  self.board[5] = fn.mapi({1, 1, 0, 1, 1, 1, 1, 1, 1, 1}, g)
+  self.board[6] = fn.mapi({0, 0, 0, 1, 1, 1, 1, 0, 0, 1}, g)
+  self.board[7] = fn.mapi({0, 0, 1, 1, 0, 1, 1, 0, 0, 0}, g)
+  self.board[8] = fn.mapi({0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, g)
 end

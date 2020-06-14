@@ -1,6 +1,8 @@
 -- Debug
 Inspect = require 'libraries/inspect/inspect'
 
+-- Libraries
+fn = require 'libraries/Moses/moses'
 Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
 Class = require 'libraries/middleclass/middleclass'
@@ -9,13 +11,13 @@ require 'Entity'
 require 'field'
 require 'piece'
 require 'globals'
+require 'utils'
 
 function love.load()
   -- Env
 
   -- Game Entities
   field = Field:new(startx, starty)
-  -- field:debugGarbage()
   piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
 
   -- Input
@@ -24,43 +26,14 @@ function love.load()
     love.event.quit()
   end)
 
-  -- input:bind('w', function()
-  --   if not piece:collide(nil, piece.y + 1, nil, nil) then
-  --     piece.y = piece.y + 1
-  --   end
-  -- end)
-  input:bind('a', function()
-    if not piece:collide(piece.x - 1, nil, nil, nil) then
-      piece.x = piece.x - 1
-    end
-  end)
-  input:bind('s', function()
-    if not piece:collide(nil, piece.y - 1, nil, nil) then
-      piece.y = piece.y - 1
-    end
-  end)
-  input:bind('d', function()
-    if not piece:collide(piece.x + 1, nil, nil, nil) then
-      piece.x = piece.x + 1
-    end
-  end)
-
-  for i=1, #pieces do
-    input:bind(tostring(i), function()
-      piece.id = pieces[i]
-      piece.rot = 0
-    end)
-  end
-
-  input:bind('k', function()
-    piece:rotateRight()
-  end)
-  input:bind('m', function()
-    piece:rotateLeft()
-  end)
-  input:bind('l', function()
-    piece:rotate180()
-  end)
+  -- input:bind('w', 'harddrop')
+  input:bind('a', 'move_left')
+  input:bind('s', 'softdrop')
+  input:bind('d', 'move_right')
+  input:bind('k', 'piece_rotate_right')
+  input:bind('m', 'piece_rotate_left')
+  input:bind('l', 'piece_rotate_180')
+  for i=1, #piece_ids do input:bind(tostring(i), 'debug_switch_piece_' .. i) end
 end
 
 function love.update(dt)
@@ -88,15 +61,15 @@ function love.keypressed(key, scancode, isrepeat)
   --   piece:rotateLeft()
   -- elseif key == 'l' then
   --   piece:rotate180()
-  -- elseif tonumber(key) ~= nil and tonumber(key) >= 1 and tonumber(key) <= 7 and piece.id ~= pieces[tonumber(key)] then
-  --   piece.id = pieces[tonumber(key)]
+  -- elseif tonumber(key) ~= nil and tonumber(key) >= 1 and tonumber(key) <= 7 and piece.id ~= piece_ids[tonumber(key)] then
+  --   piece.id = piece_ids[tonumber(key)]
   --   piece.rot = 0
   -- end
 end
 
 function love.run()
   -- Random
-  -- if love.math then love.math.setRandomSeed(os.time()) end
+  if love.math then love.math.setRandomSeed(42) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
