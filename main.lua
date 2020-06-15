@@ -10,7 +10,7 @@ class = require 'libraries/middleclass/middleclass'
 
 require 'globals'
 require 'utils'
-require 'Entity'
+require 'entity'
 require 'game'
 require 'field'
 require 'piece'
@@ -40,7 +40,7 @@ end
 
 function love.run()
   -- Random Seed
-  if love.math then love.math.setRandomSeed(42) end
+  if love.math then love.math.setRandomSeed(os.time()) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 

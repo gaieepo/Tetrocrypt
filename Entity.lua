@@ -1,10 +1,12 @@
 Entity = class('Entity')
 
-function Entity:initialize()
+function Entity:initialize(state)
   local opts = opts or {}
   if opts then for k, v in pairs(opts) do self[k] = v end end
 
+  self.state = state
   self.timer = Timer()
+  self.id = UUID()
 end
 
 function Entity:update(dt)

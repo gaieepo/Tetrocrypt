@@ -1,7 +1,7 @@
 Field = class('Field', Entity)
 
-function Field:initialize(sx, sy)
-  Field.super.initialize(self)
+function Field:initialize(state, sx, sy)
+  Field.super.initialize(self, state)
 
   self.sx, self.sy = sx, sy
   self.board = {}
@@ -17,6 +17,12 @@ function Field:initialize(sx, sy)
   self:debugTSpin()
 end
 
+function Field:update(dt)
+  Field.super.update(self, dt) -- update timer
+
+  self:clearLines()
+end
+
 function Field:draw()
   -- Grid
   for i, row in ipairs(self.board) do
@@ -26,7 +32,7 @@ function Field:draw()
       elseif self.board[i][j] == garbage_block_value then
         love.graphics.setColor(block_colors['B'])
       else
-        love.graphics.setColor(block_colors[piece_ids[self.board[i][j]]])
+        love.graphics.setColor(block_colors[piece_names[self.board[i][j]]])
       end
       love.graphics.rectangle('fill',
                               self.sx + (j - 1) * grid_size, self.sy - i * grid_size,
@@ -44,12 +50,34 @@ function Field:draw()
                      self.sx + h_grids * grid_size, self.sy - v_grids * grid_size)
 end
 
--- Debug
+function Field:clearLines()
+  local lines = 0
+  local r2 = 1
+  for r = 1, v_grids + x_grids do
+    local full = true
+    for c = 1, h_grids do
+      if self.board[r][c] == empty_block_value then
+        full = false
+        break
+      end
+    end
+
+    if full then
+      lines = lines + 1
+    else
+      self.board[r2] = self.board[r]
+      r2 = r2 + 1
+    end
+  end
+  return lines
+end
+
+-- Debug --
 function Field:debugGarbage(height)
   local height = height or 5
   for r = 1, height do
     for c = 1, h_grids do
-      self.board[r][c] = love.math.random() < 0.3 and garbage_block_value or 0
+      self.board[r][c] = love.math.random() < 0.3 and garbage_block_value or empty_block_value
     end
   end
 end

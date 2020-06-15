@@ -1,21 +1,22 @@
 -- Constants
 frame_time = 1/60 -- (second)
-gravity = 1
+gravity = 5
+gravity_coefficient = 256
 
 -- Colors
 session_background_color = {100/255, 10/255, 10/255}
 pause_background_color = {10/255, 10/255, 10/255}
 grid_color = {200/255, 200/255, 200/255}
 block_colors = {
-  ['E'] = {50/255, 50/255, 50/255},
+  ['E'] = { 50/255,  50/255,   50/255},
   ['B'] = {200/255, 200/255, 200/255},
-  ['S'] = {0/255, 240/255, 0/255},
-  ['Z'] = {240/255, 0/255, 0/255},
-  ['L'] = {240/255, 160/255, 0/255},
-  ['J'] = {0/255, 0/255, 240/255},
-  ['T'] = {160/255 , 0/255, 240/255},
-  ['O'] = {240/255, 240/255, 0/255},
-  ['I'] = {0/255, 240/255, 240/255},
+  ['S'] = {  0/255, 240/255,   0/255},
+  ['Z'] = {240/255,   0/255,   0/255},
+  ['L'] = {240/255, 160/255,   0/255},
+  ['J'] = {  0/255,   0/255, 240/255},
+  ['T'] = {160/255,   0/255, 240/255},
+  ['O'] = {240/255, 240/255,   0/255},
+  ['I'] = {  0/255, 240/255, 240/255},
 }
 
 -- Grid Position
@@ -31,14 +32,17 @@ starty = 660 -- (pixel)
 
 -- Field
 garbage_block_value = 10
+empty_block_value = 0
 
 -- Piece
-das = 10
-arr = 2
+lock_delay_limit = 60 -- (frame)
+force_lock_delay_limit = 500 -- (frame)
+das = 6 -- (frame)
+arr = 0 -- (frame)
 num_piece_blocks = 4
 default_rot = 0
-piece_ids = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
-piece_indices = {
+piece_names = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
+piece_ids = {
   ['S'] = 1,
   ['Z'] = 2,
   ['L'] = 3,

@@ -5,10 +5,6 @@ function Session:enteredState()
 
   -- Session State Input Handler
   input:bind('escape', 'pause')
-  input:bind('backspace', function()
-    field = Field:new(startx, starty)
-    piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
-  end)
 
   input:bind('w', 'harddrop')
   input:bind('a', 'move_left')
@@ -17,11 +13,11 @@ function Session:enteredState()
   input:bind('k', 'piece_rotate_right')
   input:bind('m', 'piece_rotate_left')
   input:bind('l', 'piece_rotate_180')
-  for i=1, #piece_ids do input:bind(tostring(i), 'debug_switch_piece_' .. i) end
+  -- for k, v in ipairs(piece_names) do input:bind(tostring(k), 'debug_switch_piece_' .. v) end
 
   -- Game Entities
-  field = Field:new(startx, starty)
-  piece = Piece:new(field, 'T', spawnx, spawny, default_rot)
+  field = Field:new(self, startx, starty)
+  piece = Piece:new(self, field, 'T')
 end
 
 function Session:update(dt)
