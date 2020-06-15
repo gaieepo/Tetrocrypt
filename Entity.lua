@@ -5,7 +5,7 @@ function Entity:initialize(state)
   if opts then for k, v in pairs(opts) do self[k] = v end end
 
   self.state = state
-  self.timer = Timer()
+  self.timer = Timer:new()
   self.id = UUID()
 end
 

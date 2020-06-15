@@ -12,8 +12,12 @@ require 'globals'
 require 'utils'
 require 'entity'
 require 'game'
+
 require 'field'
 require 'piece'
+require 'preview'
+require 'stat'
+require 'hold'
 
 function love.load()
   -- Main Env
@@ -39,8 +43,9 @@ end
 -- end
 
 function love.run()
-  -- Random Seed
-  if love.math then love.math.setRandomSeed(os.time()) end
+  -- Random Seed (optional)
+  -- math.randomseed(default_seed or os.time())
+  -- if love.math then love.math.setRandomSeed(default_seed or os.time()) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 

@@ -1,6 +1,6 @@
 -- Window constant
-gw = 360
-gh = 680
+gw = 800
+gh = 600
 sx = 1
 sy = 1
 
@@ -15,7 +15,7 @@ function love.conf(t)
   t.window.height = gh
   t.window.resizable = false
   t.window.borderless = false
-  t.window.vsync = true  -- enable vertical sync (boolean)
+  t.window.vsync = false -- enable vertical sync (boolean)
   t.window.highdpi = true
   t.window.x = nil  -- The x-coordinate of the window's position in the specified display (number)
   t.window.y = nil  -- The y-coordinate of the window's position in the specified display (number)

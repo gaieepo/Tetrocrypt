@@ -1,11 +1,15 @@
--- Constants
+-- Constants --
+default_seed = nil -- optional
 frame_time = 1/60 -- (second)
 gravity = 5
-gravity_coefficient = 256
+softdrop = 300 -- coefficient
+drop_coefficient = 256
+hold_allowed = true
+num_preview = 6
 
--- Colors
-session_background_color = {100/255, 10/255, 10/255}
-pause_background_color = {10/255, 10/255, 10/255}
+-- Colors --
+session_background_color = {10/255, 10/255, 10/255}
+pause_background_color = {0/255, 0/255, 0/255}
 grid_color = {200/255, 200/255, 200/255}
 block_colors = {
   ['E'] = { 50/255,  50/255,   50/255},
@@ -19,25 +23,39 @@ block_colors = {
   ['I'] = {  0/255, 240/255, 240/255},
 }
 
--- Grid Position
-grid_size = 16
+-- Position --
+startx = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+starty = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+
+-- Grid
+grid_size = 23 -- (pixel)
+grid_size_mini = 15 -- (pixel)
 h_grids = 10
 v_grids = 20
 x_grids = 20
+display_height = 24
 spawnx = 4
 spawny = 22
 
-startx = 20 -- (pixel)
-starty = 660 -- (pixel)
+-- Hold
+hold_sx_offset = 50 -- (pixel)
+hold_sy_offset = 20 -- (pixel)
+
+-- Preview
+preview_sx_offset = 400 -- (pixel)
+preview_sy_offset = 0 -- (pixel)
+y_separation = 70
 
 -- Field
+field_sx_offset = 150 -- (pixel)
+field_sy_offset = 550 -- (pixel)
 garbage_block_value = 10
 empty_block_value = 0
 
 -- Piece
 lock_delay_limit = 60 -- (frame)
 force_lock_delay_limit = 500 -- (frame)
-das = 6 -- (frame)
+das = 7 -- (frame)
 arr = 0 -- (frame)
 num_piece_blocks = 4
 default_rot = 0

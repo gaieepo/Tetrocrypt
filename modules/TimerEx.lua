@@ -1,7 +1,7 @@
-local Class = require 'libraries/middleclass/middleclass'
+local class = require 'libraries/middleclass/middleclass'
 local Timer = require 'libraries/hump/timer'
 
-local TimerEx = Class('TimerEx')
+local TimerEx = class('TimerEx')
 
 
 function TimerEx:initialize()

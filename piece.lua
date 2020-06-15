@@ -8,6 +8,7 @@ function Piece:initialize(state, field, name, x, y, rot)
   self.x = x or spawnx
   self.y = y or spawny
   self.rot = rot or default_rot -- rot 0, 1, 2, 3
+  self.hold_used = false
 
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
@@ -19,7 +20,7 @@ function Piece:initialize(state, field, name, x, y, rot)
 
   -- Passive
   -- Auto Drop
-  self.timer:every('auto_drop', gravity_coefficient * frame_time / gravity, function() -- TODO handle zero
+  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
     if not self:collide(self.x, self.y - 1, self.rot, self.field) then
       self.y = self.y - 1
       -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
@@ -32,15 +33,12 @@ function Piece:update(dt)
 
   -- Input handler
   if input:pressed('harddrop') then self:harddrop() end
+  if input:pressed('softdrop') then self:onSoftdropStart() end
+  if input:released('softdrop') then self:onSoftdropEnd() end
   if input:down('move_left', self.arr_delay, self.shift_delay) then
     if not self:collide(self.x - 1, nil, nil, nil) then
       self.x = self.x - 1
       self.lock_delay = 0
-    end
-  end
-  if input:down('softdrop') then
-    if not self:collide(nil, self.y - 1, nil, nil) then
-      self.y = self.y - 1
     end
   end
   if input:down('move_right', self.arr_delay, self.shift_delay) then
@@ -62,20 +60,16 @@ function Piece:update(dt)
     self:rotate180()
     self.lock_delay = 0
   end
-
-  -- for _, v in ipairs(piece_ids) do
-  --   if input:pressed('debug_switch_piece_' .. v) then
-  --     piece.name = v
-  --     piece.rot = 0
-  --   end
-  -- end
+  if input:pressed('hold') then
+    self:hold()
+  end
 
   -- Passive --
   -- Lock & Force Lock
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
       self:addToField()
-      -- self:initialize()
+      self:reset(piece_names[preview:next()])
       self.lock_delay = 0
       self.force_lock_delay = 0
     else
@@ -121,6 +115,10 @@ function Piece:draw()
   end
 end
 
+function Piece:destroy()
+  Piece.super.destroy(self)
+end
+
 function Piece:collide(x, y, rot, field)
   local x = x or self.x
   local y = y or self.y
@@ -155,6 +153,26 @@ function Piece:harddrop()
 
   self.y = y
   self.lock_delay = self.lock_delay_maximum
+end
+
+function Piece:onSoftdropStart()
+  self.timer:cancel('autodrop')
+
+  self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
+    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+      self.y = self.y - 1
+    end
+  end)
+end
+
+function Piece:onSoftdropEnd()
+  self.timer:cancel('softdrop')
+
+  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
+    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+      self.y = self.y - 1
+    end
+  end)
 end
 
 function Piece:rotateRight()
@@ -209,4 +227,29 @@ function Piece:rotate180()
       return end
     end
   end
+end
+
+function Piece:hold()
+  if hold_allowed and not self.hold_used then
+    local _to_hold = self.name
+    if hold.name ~= nil then
+      self:reset(hold.name)
+    else
+      self:reset(piece_names[preview:next()])
+    end
+    hold.name = _to_hold
+    self.hold_used = true
+  end
+end
+
+function Piece:reset(name, x, y, rot)
+  self.name = name
+
+  self.x = x or spawnx
+  self.y = y or spawny
+  self.rot = rot or default_rot
+  self.hold_used = false
+
+  self.lock_delay = 0
+  self.force_lock_delay = 0
 end
