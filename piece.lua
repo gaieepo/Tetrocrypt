@@ -3,6 +3,7 @@ Piece = class('Piece', Entity)
 function Piece:initialize(state, field, name, x, y, rot)
   Piece.super.initialize(self, state)
 
+  -- Piece Env
   self.field = field
   self.name = name -- TODO copy constructor, index, name
   self.x = x or spawnx
@@ -99,8 +100,7 @@ function Piece:update(dt)
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
       self:addToField()
       self:reset(piece_names[preview:next()])
-      self.lock_delay = 0
-      self.force_lock_delay = 0
+      return
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
@@ -272,6 +272,7 @@ function Piece:hold()
       self:reset(piece_names[preview:next()])
     end
     hold.name = _to_hold
+
     self.hold_used = true
   end
 end

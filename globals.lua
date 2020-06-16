@@ -8,6 +8,8 @@ hold_allowed = true
 num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 25
+line_clear_delay = 30 -- (frame)
+
 
 -- Colors --
 session_background_color = {10/255, 10/255, 10/255}

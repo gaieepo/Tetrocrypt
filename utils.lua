@@ -11,6 +11,26 @@ function table.random(t)
   return t[love.math.random(1, #t)]
 end
 
+function table.full(t)
+  for i = 1, #t do
+    if t[i] == 0 then return false end
+  end
+  return true
+end
+
+function table.empty(t)
+  for i = 1, #t do
+    if t[i] ~= 0 then return false end
+  end
+  return true
+end
+
+function table.zeros(l) -- generate a table with l number of zeros
+  local _t = {}
+  for i = 1, l do _t[i] = 0 end
+  return _t
+end
+
 function table.shuffle(t)
   local _shuffled = {}
   for index, value in ipairs(t) do

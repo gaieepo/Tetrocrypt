@@ -40,7 +40,10 @@ function Session:update(dt)
   -- Entity Update
   if not self.dead then
     field:update(dt)
-    piece:update(dt)
+
+    if not field.clearing then
+      piece:update(dt)
+    end
   end
 end
 

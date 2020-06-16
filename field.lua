@@ -3,6 +3,8 @@ Field = class('Field', Entity)
 function Field:initialize(state, sx, sy)
   Field.super.initialize(self, state)
 
+  -- Field Env
+  self.clearing = false
   self.sx = self.state.startx + field_sx_offset
   self.sy = self.state.starty + field_sy_offset
   self.board = {}
@@ -20,7 +22,15 @@ end
 function Field:update(dt)
   Field.super.update(self, dt) -- update timer
 
-  self:clearLines()
+  local lines = self:checkLines()
+  if lines > 0 then
+    self.clearing = true
+    self:clearLines()
+    self.timer:after(line_clear_delay * frame_time, function()
+      self:fallStack()
+      self.clearing = false
+    end)
+  end
 end
 
 function Field:draw()
@@ -56,26 +66,40 @@ function Field:destroy()
   Field.super.destroy(self, dt)
 end
 
-function Field:clearLines()
+function Field:checkLines()
   local lines = 0
-  local r2 = 1
   for r = 1, v_grids + x_grids do
-    local full = true
-    for c = 1, h_grids do
-      if self.board[r][c] == empty_block_value then
-        full = false
-        break
-      end
-    end
-
-    if full then
-      lines = lines + 1
-    else
-      self.board[r2] = self.board[r]
-      r2 = r2 + 1
-    end
+    if table.full(self.board[r]) then lines = lines + 1 end
   end
   return lines
+end
+
+function Field:clearLines()
+  for r = 1, v_grids + x_grids do
+    if table.full(self.board[r]) then
+      self.board[r] = {}
+      for i = 1, h_grids do self.board[r][i] = 0 end
+    end
+  end
+end
+
+function Field:fallStack()
+  for r = 1, v_grids + x_grids do
+    if table.empty(self.board[r]) then
+      while table.empty(self.board[r]) do
+        local done = true
+        for s = r, v_grids + x_grids - 1 do
+          self.board[s] = table.copy(self.board[s + 1])
+          if not table.empty(self.board[s]) then done = false end
+        end
+
+        if done then break end -- prevent infinite while loop
+
+        -- top-most row should be all empty
+        self.board[v_grids + x_grids] = table.zeros(h_grids)
+      end
+    end
+  end
 end
 
 -- Debug --
