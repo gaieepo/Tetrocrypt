@@ -32,3 +32,10 @@ function table.copy(t)
   end
   return copy
 end
+
+function human_time(t) -- (second)
+  local _minutes = math.floor(t / 60)
+  local _seconds = math.floor(t % 60)
+  local _millis = math.floor(t % 1 / 0.01)
+  return string.format('%02d', _minutes) .. ':' .. string.format('%02d', _seconds) .. ':' .. _millis
+end

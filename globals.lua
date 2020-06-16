@@ -6,11 +6,13 @@ softdrop = 300 -- coefficient
 drop_coefficient = 256
 hold_allowed = true
 num_preview = 6
+default_font = 'firacode_retina.ttf'
+default_font_size = 25
 
 -- Colors --
 session_background_color = {10/255, 10/255, 10/255}
 pause_background_color = {0/255, 0/255, 0/255}
-grid_color = {200/255, 200/255, 200/255}
+grid_color = {100/255, 100/255, 100/255}
 block_colors = {
   ['E'] = { 50/255,  50/255,   50/255},
   ['B'] = {200/255, 200/255, 200/255},
@@ -53,6 +55,8 @@ garbage_block_value = 10
 empty_block_value = 0
 
 -- Piece
+left_direction = -1
+right_direction = 1
 lock_delay_limit = 60 -- (frame)
 force_lock_delay_limit = 500 -- (frame)
 das = 7 -- (frame)
@@ -128,4 +132,23 @@ wallkick_I_180 = {
   {{ 0,  1}, { 0,  2}, { 0, -1}, { 0, -2}, {-1,  0}},  -- 1 >> 3
   {{ 1,  0}, { 2,  0}, {-1,  0}, {-2,  0}, { 0, -1}},  -- 2 >> 0
   {{ 0,  1}, { 0,  2}, { 0, -1}, { 0, -2}, { 1,  0}},  -- 3 >> 1
+}
+
+piece_shift = {
+  ['1110'] = -1,
+  ['1101'] = 1,
+  ['1100'] = 0,
+
+  ['0011'] = 0,
+  ['0010'] = -1,
+  ['0001'] = 1,
+  ['0000'] = 0, -- initial shift state
+
+  ['0111'] = -1,
+  ['0100'] = 0,
+  ['0110'] = -1,
+
+  ['1011'] = 1,
+  ['1001'] = 1,
+  ['1000'] = 0,
 }

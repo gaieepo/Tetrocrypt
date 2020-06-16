@@ -13,6 +13,12 @@ function Piece:initialize(state, field, name, x, y, rot)
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
 
+  self.last_left_shift = '0'
+  self.last_right_shift = '0'
+  self.left_shift = '0'
+  self.right_shift = '0'
+  self.shift_direction = 0
+
   self.lock_delay = 0
   self.lock_delay_maximum = lock_delay_limit * frame_time
   self.force_lock_delay = 0
@@ -35,13 +41,36 @@ function Piece:update(dt)
   if input:pressed('harddrop') then self:harddrop() end
   if input:pressed('softdrop') then self:onSoftdropStart() end
   if input:released('softdrop') then self:onSoftdropEnd() end
-  if input:down('move_left', self.arr_delay, self.shift_delay) then
+
+  -- piece shift state
+  if input:pressed('move_left') then
+    self.last_left_shift = self.left_shift
+    self.last_right_shift = self.right_shift
+    self.left_shift = '1'
+  end
+  if input:released('move_left') then
+    self.last_left_shift = self.left_shift
+    self.last_right_shift = self.right_shift
+    self.left_shift = '0'
+  end
+  if input:pressed('move_right') then
+    self.last_left_shift = self.left_shift
+    self.last_right_shift = self.right_shift
+    self.right_shift = '1'
+  end
+  if input:released('move_right') then
+    self.last_left_shift = self.left_shift
+    self.last_right_shift = self.right_shift
+    self.right_shift = '0'
+  end
+  self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
+  if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then
     if not self:collide(self.x - 1, nil, nil, nil) then
       self.x = self.x - 1
       self.lock_delay = 0
     end
   end
-  if input:down('move_right', self.arr_delay, self.shift_delay) then
+  if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then
     if not self:collide(self.x + 1, nil, nil, nil) then
       self.x = self.x + 1
       self.lock_delay = 0
@@ -80,6 +109,11 @@ function Piece:update(dt)
     self.lock_delay = 0
     self.force_lock_delay = 0
   end
+
+  -- Dead condition (might move to session)
+  -- 1. spawn with collision, when legal collide everything
+  -- 2. lock with higher than visible field TODO
+  if self:collide() then self.state.dead = true end
 end
 
 function Piece:draw()
@@ -243,13 +277,21 @@ function Piece:hold()
 end
 
 function Piece:reset(name, x, y, rot)
-  self.name = name
+  self:initialize(self.state, self.field, name, x, y, rot)
 
-  self.x = x or spawnx
-  self.y = y or spawny
-  self.rot = rot or default_rot
-  self.hold_used = false
+  -- self.name = name
 
-  self.lock_delay = 0
-  self.force_lock_delay = 0
+  -- self.x = x or spawnx
+  -- self.y = y or spawny
+  -- self.rot = rot or default_rot
+  -- self.hold_used = false
+
+  -- self.last_left_shift = '0'
+  -- self.last_right_shift = '0'
+  -- self.left_shift = '0'
+  -- self.right_shift = '0'
+  -- self.shift_direction = 0
+
+  -- self.lock_delay = 0
+  -- self.force_lock_delay = 0
 end

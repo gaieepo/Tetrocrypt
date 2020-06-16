@@ -2,6 +2,9 @@ local Session = Game:addState('Session')
 
 function Session:enteredState()
   -- Session Env
+  self.start_time = love.timer.getTime()
+  self.session_duration = 0
+  self.dead = false
   self.startx, self.starty = startx, starty
 
   -- Session State Input Handler
@@ -26,20 +29,28 @@ function Session:enteredState()
 end
 
 function Session:update(dt)
+  -- Session
+  if not self.dead then self.session_duration = love.timer.getTime() - self.start_time end
+
   -- Switch State
   if input:pressed('pause') then self:pushState('Pause') end
-  if input:pressed('restart') then self:finish() end
+  if input:pressed('restart') then self:gotoState('Session') end
+  if self.dead then self:finish() end
 
   -- Entity Update
-  field:update(dt)
-  piece:update(dt)
+  if not self.dead then
+    field:update(dt)
+    piece:update(dt)
+  end
 end
 
 function Session:draw()
   love.graphics.setBackgroundColor(session_background_color)
 
   -- Session Draw
-  love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 0, 0)
+  love.graphics.setColor(1, 1, 1)
+  love.graphics.print('FPS: ' .. love.timer.getFPS(), 0, 0)
+  love.graphics.print('Time: ' .. human_time(self.session_duration), 0, gh - default_font_size)
 
   -- Entity Draw
   hold:draw()
@@ -48,9 +59,17 @@ function Session:draw()
   piece:draw()
   stat:draw()
 
-  -- Preview sequence draw
+  -- Dead
+  if self.dead then
+    love.graphics.setColor(1, 0, 0)
+    local gg_text = 'Game Over'
+    love.graphics.print(gg_text,
+                        gw / 2, gh / 2,
+                        0, 1, 1,
+                        global_font:getWidth(gg_text) / 2, global_font:getHeight(gg_text) / 2)
+  end
 end
 
 function Session:finish()
-  self:gotoState('Session')
+  -- Finishing content
 end
