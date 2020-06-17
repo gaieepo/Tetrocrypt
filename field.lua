@@ -28,6 +28,7 @@ function Field:update(dt)
     self:clearLines()
     self.timer:after(line_clear_delay * frame_time, function()
       self:fallStack()
+      stat.lines = stat.lines + lines
       self.clearing = false
     end)
   end

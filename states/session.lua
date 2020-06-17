@@ -3,8 +3,8 @@ local Session = Game:addState('Session')
 function Session:enteredState()
   -- Session Env
   self.start_time = love.timer.getTime()
-  self.session_duration = 0
-  self.dead = false
+  self.session_duration = 0 -- (second)
+  self.session_state = GAME_NORMAL
   self.startx, self.starty = startx, starty
 
   -- Session State Input Handler
@@ -30,15 +30,15 @@ end
 
 function Session:update(dt)
   -- Session
-  if not self.dead then self.session_duration = love.timer.getTime() - self.start_time end
+  if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end
 
   -- Switch State
   if input:pressed('pause') then self:pushState('Pause') end
   if input:pressed('restart') then self:gotoState('Session') end
-  if self.dead then self:finish() end
+  if self.session_state == GAME_LOSS then self:finish() end
 
   -- Entity Update
-  if not self.dead then
+  if self.session_state == GAME_NORMAL then
     field:update(dt)
 
     if not field.clearing then
@@ -63,7 +63,7 @@ function Session:draw()
   stat:draw()
 
   -- Dead
-  if self.dead then
+  if self.session_state == GAME_LOSS then
     love.graphics.setColor(1, 0, 0)
     local gg_text = 'Game Over'
     love.graphics.print(gg_text,

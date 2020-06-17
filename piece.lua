@@ -99,6 +99,7 @@ function Piece:update(dt)
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
       self:addToField()
+      stat.pieces = stat.pieces + 1
       self:reset(piece_names[preview:next()])
       return
     else
@@ -113,10 +114,27 @@ function Piece:update(dt)
   -- Dead condition (might move to session)
   -- 1. spawn with collision, when legal collide everything
   -- 2. lock with higher than visible field TODO
-  if self:collide() then self.state.dead = true end
+  if self:collide() then self.state.session_state = GAME_LOSS end
 end
 
 function Piece:draw()
+  -- Ghost
+  local y2 = self.y
+  while not self:collide(nil, y2 - 1, nil, nil) do y2 = y2 - 1 end
+
+  if y2 ~= self.y then
+    for i = 1, num_piece_blocks do
+      local x = piece_xs[self.name][self.rot + 1][i]
+      local y = piece_ys[self.name][self.rot + 1][i]
+      love.graphics.setColor(block_colors[self.name])
+      love.graphics.setLineWidth(3)
+      love.graphics.rectangle('line',
+                              self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (y2 - y) * grid_size,
+                              grid_size, grid_size)
+    end
+    love.graphics.setLineWidth(1) -- reset line width TODO better way to resolve this
+  end
+
   -- Piece
   for i = 1, num_piece_blocks do
     local x = piece_xs[self.name][self.rot + 1][i]
@@ -128,23 +146,6 @@ function Piece:draw()
     love.graphics.setColor(grid_color)
     love.graphics.rectangle('line',
                             self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (self.y - y) * grid_size,
-                            grid_size, grid_size)
-  end
-
-  -- Ghost
-  local y2 = self.y
-  while not self:collide(nil, y2 - 1, nil, nil) do y2 = y2 - 1 end
-
-  for i = 1, num_piece_blocks do
-    local x = piece_xs[self.name][self.rot + 1][i]
-    local y = piece_ys[self.name][self.rot + 1][i]
-    love.graphics.setColor(block_colors[self.name])
-    love.graphics.rectangle('fill',
-                            self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (y2 - y) * grid_size,
-                            grid_size, grid_size)
-    love.graphics.setColor(grid_color)
-    love.graphics.rectangle('line',
-                            self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (y2 - y) * grid_size,
                             grid_size, grid_size)
   end
 end
@@ -278,21 +279,14 @@ function Piece:hold()
 end
 
 function Piece:reset(name, x, y, rot)
-  self:initialize(self.state, self.field, name, x, y, rot)
+  -- self:initialize(self.state, self.field, name, x, y, rot)
+  self.name = name
 
-  -- self.name = name
+  self.x = x or spawnx
+  self.y = y or spawny
+  self.rot = rot or default_rot
+  self.hold_used = false
 
-  -- self.x = x or spawnx
-  -- self.y = y or spawny
-  -- self.rot = rot or default_rot
-  -- self.hold_used = false
-
-  -- self.last_left_shift = '0'
-  -- self.last_right_shift = '0'
-  -- self.left_shift = '0'
-  -- self.right_shift = '0'
-  -- self.shift_direction = 0
-
-  -- self.lock_delay = 0
-  -- self.force_lock_delay = 0
+  self.lock_delay = 0
+  self.force_lock_delay = 0
 end

@@ -24,14 +24,16 @@ function love.load()
   global_font = love.graphics.newFont(default_font, default_font_size)
   love.graphics.setFont(global_font)
 
+  focused = true
+
   -- Global Input Handler
   input = Input()
 
   -- Memory Debug
   input:bind('space', function()
-    print("Before collection: " .. collectgarbage("count")/1024)
+    print("Before collection: " .. collectgarbage("count") / 1024)
     collectgarbage()
-    print("After collection: " .. collectgarbage("count")/1024)
+    print("After collection: " .. collectgarbage("count") / 1024)
     print("Object count: ")
     local counts = type_count()
     for k, v in pairs(counts) do print(k, v) end
@@ -44,14 +46,17 @@ end
 
 function love.update(dt)
   -- Timer.update(dt) -- global timer
-  game:update(dt)
+  if focused then game:update(dt) end
 end
 
 function love.draw()
   game:draw()
 end
 
--- Memory --
+function love.focus(f)
+  focused = f
+end
+
 -- Memory --
 function count_all(f)
   local seen = {}
