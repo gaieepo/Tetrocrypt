@@ -44,7 +44,7 @@ function Field:draw()
         elseif self.board[i][j] == garbage_block_value then
           love.graphics.setColor(block_colors['B'])
         else
-          love.graphics.setColor(block_colors[piece_names[self.board[i][j]]])
+          love.graphics.setColor(fn.mapi(block_colors[piece_names[self.board[i][j]]], function(v) return v * 0.8 end))
         end
         love.graphics.rectangle('fill',
                                 self.sx + (j - 1) * grid_size, self.sy - i * grid_size,

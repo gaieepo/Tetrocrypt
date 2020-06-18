@@ -4,7 +4,8 @@ function Session:enteredState()
   -- Session Env
   self.start_time = love.timer.getTime()
   self.session_duration = 0 -- (second)
-  self.session_state = GAME_NORMAL
+  self.session_state = GAME_COUNTDOWN
+  self.counting_down_text = nil
   self.startx, self.starty = startx, starty
 
   -- Session State Input Handler
@@ -21,15 +22,29 @@ function Session:enteredState()
   input:bind('q', 'hold')
 
   -- Game Entities
-  hold = Hold:new(self)
-  preview = Preview:new(self)
+  hold = Hold:new(self.startx, self.starty)
+  preview = Preview:new(self.startx, self.starty)
   stat = Stat:new(self)
+
   field = Field:new(self)
   piece = Piece:new(self, field, piece_names[preview:next()])
 end
 
 function Session:update(dt)
-  -- Session
+  -- Update timer in state
+  self.timer:update(dt)
+
+  -- Session Env
+  -- Count down
+  if self.session_state == GAME_COUNTDOWN and self.counting_down_text == nil then
+    self.timer:after(1, function() self.session_state = GAME_NORMAL end)
+    self.timer:during(0.5, function() self.counting_down_text = 'READY' end, function()
+      self.timer:during(0.5, function() self.counting_down_text = 'GO' end, function()
+        self.counting_down_text = nil
+      end)
+    end)
+  end
+
   if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end
 
   -- Switch State
@@ -70,6 +85,18 @@ function Session:draw()
                         gw / 2, gh / 2,
                         0, 1, 1,
                         global_font:getWidth(gg_text) / 2, global_font:getHeight(gg_text) / 2)
+  end
+
+  -- Count down
+  if self.counting_down_text ~= nil then
+    local temp_font = love.graphics.newFont(default_font, 50)
+    love.graphics.setColor(1, 1, 0)
+    love.graphics.setFont(temp_font)
+    love.graphics.print(self.counting_down_text,
+                        field.sx + h_grids * grid_size / 2, field.sy - v_grids * grid_size / 2,
+                        0, 1, 1,
+                        temp_font:getWidth(self.counting_down_text) / 2, temp_font:getHeight(self.counting_down_text) / 2)
+    love.graphics.setFont(global_font)
   end
 end
 

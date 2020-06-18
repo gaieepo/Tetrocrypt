@@ -1,12 +1,11 @@
 Preview = class('Preview')
 
-function Preview:initialize(state)
-  self.state = state
+function Preview:initialize(sx, sy)
   self.queue = {}
   self.generate_count = 0
 
-  self.sx = self.state.startx + preview_sx_offset
-  self.sy = self.state.starty + preview_sy_offset
+  self.sx = sx + preview_sx_offset
+  self.sy = sy + preview_sy_offset
 
   -- Initialize queue
   -- 4 bags to ensure

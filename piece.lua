@@ -1,14 +1,14 @@
 Piece = class('Piece', Entity)
 
-function Piece:initialize(state, field, name, x, y, rot)
+function Piece:initialize(state, field, name, rot, x, y)
   Piece.super.initialize(self, state)
 
   -- Piece Env
   self.field = field
   self.name = name -- TODO copy constructor, index, name
-  self.x = x or spawnx
-  self.y = y or spawny
   self.rot = rot or default_rot -- rot 0, 1, 2, 3
+  self.x = x or self:getSpawnX()
+  self.y = y or self:getSpawnY()
   self.hold_used = false
 
   self.shift_delay = das * frame_time
@@ -154,6 +154,14 @@ function Piece:destroy()
   Piece.super.destroy(self)
 end
 
+function Piece:getSpawnX()
+  return 1 + math.floor((h_grids - piece_widths[self.name][self.rot + 1]) / 2)
+end
+
+function Piece:getSpawnY()
+  return v_grids + piece_max_heights[self.name][self.rot + 1] - 1
+end
+
 function Piece:collide(x, y, rot, field)
   local x = x or self.x
   local y = y or self.y
@@ -279,12 +287,11 @@ function Piece:hold()
 end
 
 function Piece:reset(name, x, y, rot)
-  -- self:initialize(self.state, self.field, name, x, y, rot)
   self.name = name
 
-  self.x = x or spawnx
-  self.y = y or spawny
   self.rot = rot or default_rot
+  self.x = x or self:getSpawnX()
+  self.y = y or self:getSpawnY()
   self.hold_used = false
 
   self.lock_delay = 0

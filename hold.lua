@@ -1,11 +1,10 @@
 Hold = class('Hold')
 
-function Hold:initialize(state)
-  self.state = state
+function Hold:initialize(sx, sy)
   self.name = nil
 
-  self.sx = self.state.startx + hold_sx_offset
-  self.sy = self.state.starty + hold_sy_offset
+  self.sx = sx + hold_sx_offset
+  self.sy = sy + hold_sy_offset
 end
 
 function Hold:draw()
