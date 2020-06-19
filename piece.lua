@@ -1,5 +1,17 @@
 Piece = class('Piece', Entity)
 
+function Piece.static.getRotateRight(rot)
+  return (rot + 1) % 4
+end
+
+function Piece.static.getRotateLeft(rot)
+  return (rot + 4 - 1) % 4
+end
+
+function Piece.static.getRotate180(rot)
+  return (rot + 4 - 2) % 4
+end
+
 function Piece:initialize(state, field, name, rot, x, y)
   Piece.super.initialize(self, state)
 
@@ -10,6 +22,7 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.x = x or self:getSpawnX()
   self.y = y or self:getSpawnY()
   self.hold_used = false
+  self.last_valid_move = 'null'
 
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
@@ -65,50 +78,43 @@ function Piece:update(dt)
     self.right_shift = '0'
   end
   self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
-  if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then
-    if not self:collide(self.x - 1, nil, nil, nil) then
-      self.x = self.x - 1
-      self.lock_delay = 0
-    end
-  end
-  if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then
-    if not self:collide(self.x + 1, nil, nil, nil) then
-      self.x = self.x + 1
-      self.lock_delay = 0
-    end
-  end
+  if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then self:moveLeft() end
+  if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then self:moveRight() end
 
-  if input:pressed('piece_rotate_right') then
-    self:rotateRight()
-    self.lock_delay = 0
-  end
-  if input:pressed('piece_rotate_left') then
-    self:rotateLeft()
-    self.lock_delay = 0
-  end
-  if input:pressed('piece_rotate_180') then
-    self:rotate180()
-    self.lock_delay = 0
-  end
-  if input:pressed('hold') then
-    self:hold()
-  end
+  if input:pressed('piece_rotate_right') then self:rotateRight() end
+  if input:pressed('piece_rotate_left') then self:rotateLeft() end
+  if input:pressed('piece_rotate_180') then self:rotate180() end
+  if input:pressed('hold') then self:hold() end
 
   -- Passive --
   -- Lock & Force Lock
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
-      self:addToField()
+      -- Pre-lock process
       stat.pieces = stat.pieces + 1
+
+      if self.name == 'T' and self.last_valid_move == 'rotation' then
+        if spin_mode == 'tspinonly' then
+          self:setTSpin()
+        elseif spin_mode == 'allspin' then
+          self:setAllSpin()
+        end
+      else
+        stat.tspin = false
+        stat.tspinmini = false
+      end
+
+      field:addPiece(self.name, self.rot, self.x, self.y)
+
+      -- Respawn new piece
       self:reset(piece_names[preview:next()])
-      return
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
     end
   else
     self.lock_delay = 0
-    self.force_lock_delay = 0
+    -- self.force_lock_delay = 0 (caution: temporary floating does not reset force lock delay)
   end
 
   -- Dead condition (might move to session)
@@ -159,7 +165,7 @@ function Piece:getSpawnX()
 end
 
 function Piece:getSpawnY()
-  return v_grids + piece_max_heights[self.name][self.rot + 1] - 1
+  return v_grids + piece_max_heights[self.name][self.rot + 1]
 end
 
 function Piece:collide(x, y, rot, field)
@@ -171,22 +177,10 @@ function Piece:collide(x, y, rot, field)
   for i = 1, num_piece_blocks do
     local x2 = x + piece_xs[self.name][rot + 1][i]
     local y2 = y - piece_ys[self.name][rot + 1][i]
-    if x2 > h_grids or y2 < 1 then return true end
-    if field.board[y2][x2] ~= 0 then return true end
+    -- if x2 > h_grids or y2 < 1 then return true end
+    if field:getBlock(x2, y2) ~= 0 then return true end
   end
   return false
-end
-
-function Piece:addToField(x, y, rot)
-  local rot = rot or self.rot
-  local x = x or self.x
-  local y = y or self.y
-
-  for i = 1, num_piece_blocks do
-    local x2 = x + piece_xs[self.name][rot + 1][i]
-    local y2 = y - piece_ys[self.name][rot + 1][i]
-    self.field.board[y2][x2] = piece_ids[self.name]
-  end
 end
 
 -- Movement --
@@ -218,8 +212,28 @@ function Piece:onSoftdropEnd()
   end)
 end
 
+function Piece:moveLeft()
+    if not self:collide(self.x - 1, nil, nil, nil) then
+      self.x = self.x - 1
+
+      -- reset lock delay only when movable
+      self.lock_delay = 0
+      self.last_valid_move = 'shift'
+    end
+end
+
+function Piece:moveRight()
+    if not self:collide(self.x + 1, nil, nil, nil) then
+      self.x = self.x + 1
+
+      -- reset lock delay only when movable
+      self.lock_delay = 0
+      self.last_valid_move = 'shift'
+    end
+end
+
 function Piece:rotateRight()
-  local rot = (self.rot + 1) % 4
+  local rot = self.class.getRotateRight(self.rot)
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
@@ -231,13 +245,18 @@ function Piece:rotateRight()
         self.x = self.x + x2
         self.y = self.y - y2
         self.rot = rot
-      return end
+        break
+      end
     end
   end
+
+  -- reset lock delay
+  self.lock_delay = 0
+  self.last_valid_move = 'rotation'
 end
 
 function Piece:rotateLeft()
-  local rot = (self.rot + 4 - 1) % 4
+  local rot = self.class.getRotateLeft(self.rot)
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
@@ -249,13 +268,18 @@ function Piece:rotateLeft()
         self.x = self.x + x2
         self.y = self.y - y2
         self.rot = rot
-      return end
+        break
+      end
     end
   end
+
+  -- reset lock delay
+  self.lock_delay = 0
+  self.last_valid_move = 'rotation'
 end
 
 function Piece:rotate180()
-  local rot = (self.rot + 4 - 2) % 4
+  local rot = self.class.getRotate180(self.rot)
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
@@ -267,9 +291,14 @@ function Piece:rotate180()
         self.x = self.x + x2
         self.y = self.y - y2
         self.rot = rot
-      return end
+        break
+      end
     end
   end
+
+  -- reset lock delay
+  self.lock_delay = 0
+  self.last_valid_move = 'rotation'
 end
 
 function Piece:hold()
@@ -293,7 +322,36 @@ function Piece:reset(name, x, y, rot)
   self.x = x or self:getSpawnX()
   self.y = y or self:getSpawnY()
   self.hold_used = false
+  self.last_valid_move = 'null'
 
   self.lock_delay = 0
   self.force_lock_delay = 0
+end
+
+function Piece:setTSpin()
+  if self:collide(nil, nil, self.class.static.getRotateLeft(self.rot), nil)
+    and self:collide(nil, nil, self.class.static.getRotateRight(self.rot), nil) then
+    stat.tspinmini = true
+  else
+    stat.tspinmini = false
+  end
+
+  local tx = {0, 2, 0, 2}
+  local ty = {0, 0, 2, 2}
+
+  local count = 0
+  for i = 1, #tx do
+    if self.field:getBlock(self.x + tx[i], self.y - ty[i]) ~= empty_block_value then
+      count = count + 1
+    end
+  end
+
+  if count >= 3 then
+    stat.tspin = true
+  else
+    stat.tspin = false
+  end
+end
+
+function Piece:setAllSpin()
 end

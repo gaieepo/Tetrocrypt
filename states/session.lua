@@ -79,12 +79,15 @@ function Session:draw()
 
   -- Dead
   if self.session_state == GAME_LOSS then
+    local temp_font = love.graphics.newFont(default_font, 50)
     love.graphics.setColor(1, 0, 0)
+    love.graphics.setFont(temp_font)
     local gg_text = 'Game Over'
     love.graphics.print(gg_text,
-                        gw / 2, gh / 2,
+                        field.sx + h_grids * grid_size / 2, field.sy - v_grids * grid_size / 2,
                         0, 1, 1,
-                        global_font:getWidth(gg_text) / 2, global_font:getHeight(gg_text) / 2)
+                        temp_font:getWidth(gg_text) / 2, temp_font:getHeight(gg_text) / 2)
+    love.graphics.setFont(global_font)
   end
 
   -- Count down

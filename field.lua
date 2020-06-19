@@ -4,6 +4,7 @@ function Field:initialize(state, sx, sy)
   Field.super.initialize(self, state)
 
   -- Field Env
+  self.trigger_update = false
   self.clearing = false
   self.sx = self.state.startx + field_sx_offset
   self.sy = self.state.starty + field_sy_offset
@@ -23,12 +24,15 @@ function Field:update(dt)
   Field.super.update(self, dt) -- update timer
 
   local lines = self:checkLines()
+  if self.trigger_update then
+    stat:updateStatus(lines)
+    self.trigger_update = false
+  end
   if lines > 0 then
     self.clearing = true
     self:clearLines()
     self.timer:after(line_clear_delay * frame_time, function()
       self:fallStack()
-      stat.lines = stat.lines + lines
       self.clearing = false
     end)
   end
@@ -65,6 +69,25 @@ end
 
 function Field:destroy()
   Field.super.destroy(self, dt)
+end
+
+function Field:addPiece(name, rot, x, y)
+  for i = 1, num_piece_blocks do
+    local x2 = x + piece_xs[name][rot + 1][i]
+    local y2 = y - piece_ys[name][rot + 1][i]
+    self.board[y2][x2] = piece_ids[name]
+  end
+
+  -- Trigger stat update
+  self.trigger_update = true
+end
+
+function Field:getBlock(x, y)
+  if x < 1 or x > h_grids or y < 1 or y > v_grids + x_grids then
+    return garbage_block_value
+  else
+    return self.board[y][x]
+  end
 end
 
 function Field:checkLines()
@@ -123,4 +146,12 @@ function Field:debugTSpin()
   self.board[6] = fn.mapi({0, 0, 0, 1, 1, 1, 1, 0, 0, 1}, g)
   self.board[7] = fn.mapi({0, 0, 1, 1, 0, 1, 1, 0, 0, 0}, g)
   self.board[8] = fn.mapi({0, 0, 0, 0, 0, 1, 0, 0, 0, 0}, g)
+end
+
+function Field:debugC4W()
+  local g = function(v) return v * garbage_block_value end
+  self.board[1] = fn.mapi({1, 1, 1, 1, 1, 1, 0, 1, 1, 1}, g)
+  for i = 2, v_grids do
+    self.board[i] = fn.mapi({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, g)
+  end
 end
