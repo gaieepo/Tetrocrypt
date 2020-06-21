@@ -32,7 +32,7 @@ function love.load()
   input = Input()
 
   -- Bot Loader
-  bot_loader.start()
+  if bot_play then bot_loader.start() end
 
   -- Memory Debug
   input:bind('space', function()
@@ -53,7 +53,7 @@ function love.update(dt)
   if focused then game:update(dt) end
 
   -- Bot update
-  bot_loader.update()
+  if bot_play then bot_loader.update() end
 end
 
 function love.draw()

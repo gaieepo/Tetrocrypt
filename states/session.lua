@@ -3,7 +3,7 @@ local Session = Game:addState('Session')
 function Session:enteredState()
   -- Session Env
   self.pause = false
-  self.bot_play = false
+  self.bot_play = bot_play
   self.start_time = love.timer.getTime()
   self.session_duration = 0 -- (second)
   self.session_state = GAME_COUNTDOWN

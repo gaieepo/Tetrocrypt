@@ -49,13 +49,15 @@ function Piece:initialize(state, field, name, rot, x, y)
   self:reset(self.name, false)
 
   -- Passive
-  -- Auto Drop
-  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
-    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
-      self.y = self.y - 1
-      -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
-    end
-  end)
+  -- Auto Drop (disable when bot)
+  if not self.state.bot_play then
+    self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
+      if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+        self.y = self.y - 1
+        -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
+      end
+    end)
+  end
 end
 
 function Piece:update(dt)
@@ -234,11 +236,13 @@ function Piece:onSoftdropEnd()
   self.timer:cancel('softdrop')
   self.softdropping = false
 
-  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
-    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
-      self.y = self.y - 1
-    end
-  end)
+  if not self.state.bot_play then
+    self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
+      if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+        self.y = self.y - 1
+      end
+    end)
+  end
 end
 
 function Piece:moveLeft()
@@ -364,7 +368,7 @@ function Piece:updateBot()
   bot_loader.think(function()
     self.thinkFinished = true
   end)
-  self.timer:after(5, function()
+  self.timer:after(1, function()
     bot_loader.terminate()
   end)
 end
@@ -374,15 +378,15 @@ function Piece:reset(name, hold)
   self.rot = default_rot
   self.x = self:getSpawnX()
   self.y = self:getSpawnY()
-
   self.hold_used = false
   self.last_valid_move = 'null'
+  self.softdropping = false
 
+  self.shift_direction = 0
   self.lock_delay = 0
   self.force_lock_delay = 0
 
   -- Update bot
-  -- if bot
   if self.state.bot_play and not hold then
     self:updateBot()
   end

@@ -10,6 +10,7 @@ default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 0 -- (frame)
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
+bot_play = false
 
 GAME_NORMAL = 0
 GAME_WIN = 1
