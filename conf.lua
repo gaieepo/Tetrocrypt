@@ -1,5 +1,5 @@
 -- Window constant
-gw = 800
+gw = 1000
 gh = 600
 sx = 1
 sy = 1

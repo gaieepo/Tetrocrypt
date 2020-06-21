@@ -7,6 +7,7 @@ Stateful = require 'libraries/stateful/stateful'
 Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
 class = require 'libraries/middleclass/middleclass'
+bot_loader = require 'bot-loader'
 
 require 'globals'
 require 'utils'
@@ -29,6 +30,9 @@ function love.load()
   -- Global Input Handler
   input = Input()
 
+  -- Bot Loader
+  bot_loader.start()
+
   -- Memory Debug
   input:bind('space', function()
     print("Before collection: " .. collectgarbage("count") / 1024)
@@ -40,13 +44,15 @@ function love.load()
     print("-------------------------------------")
   end)
 
-
   game = Game:new()
 end
 
 function love.update(dt)
   -- Timer.update(dt) -- global timer
   if focused then game:update(dt) end
+
+  -- Bot update
+  bot_loader.update()
 end
 
 function love.draw()

@@ -65,7 +65,6 @@ function Stat:draw()
   love.graphics.print('Tspin:        ' .. tostring(self.tspin), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('Tspin Mini:   ' .. tostring(self.tspinmini), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('B2B:          ' .. tostring(self.b2b), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
-
   love.graphics.print('Status:       ' .. self.status, stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
 end
 
@@ -84,7 +83,6 @@ function Stat:updateStatus(lines)
     if (lines == 4 or self.tspin) and self.prev_back then self.b2b = true else self.b2b = false end
     if lines == 4 or self.tspin then self.prev_back = true else self.prev_back = false end
 
-    print(self.status)
     self.current_attack = garbage_table[self.status] + self:getComboAttack() + (self.b2b and 1 or 0)
     self.total_attack = self.total_attack + self.current_attack
   end

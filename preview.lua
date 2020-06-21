@@ -57,3 +57,14 @@ function Preview:peak(n)
   end
   return _nextn
 end
+
+function Preview:peakString(n)
+  local _nextn = ''
+  local delimiter = ','
+  local d = ''
+  for i = 1, n do
+    _nextn = _nextn .. d .. piece_names[self.queue[i]]
+    d = delimiter
+  end
+  return _nextn
+end

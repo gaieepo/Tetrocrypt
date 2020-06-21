@@ -38,6 +38,9 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.force_lock_delay = 0
   self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
 
+  -- Empty reset for consistency
+  self:reset(self.name, false)
+
   -- Passive
   -- Auto Drop
   self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
@@ -87,6 +90,11 @@ function Piece:update(dt)
   if input:pressed('hold') then self:hold() end
 
   -- Passive --
+  if self.thinkFinished then
+    print(bot_loader.getMove())
+    self.thinkFinished = false
+  end
+
   -- Lock & Force Lock
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
@@ -107,7 +115,7 @@ function Piece:update(dt)
       field:addPiece(self.name, self.rot, self.x, self.y)
 
       -- Respawn new piece
-      self:reset(piece_names[preview:next()])
+      self:reset(piece_names[preview:next()], false)
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
@@ -305,9 +313,9 @@ function Piece:hold()
   if hold_allowed and not self.hold_used then
     local _to_hold = self.name
     if hold.name ~= nil then
-      self:reset(hold.name)
+      self:reset(hold.name, true)
     else
-      self:reset(piece_names[preview:next()])
+      self:reset(piece_names[preview:next()], true)
     end
     hold.name = _to_hold
 
@@ -315,17 +323,42 @@ function Piece:hold()
   end
 end
 
-function Piece:reset(name, x, y, rot)
-  self.name = name
+function Piece:updateBot()
+  self.thinkFinished = false
+  bot_loader.updateBot(
+    preview:peakString(num_preview), -- default 6
+    self.name,
+    hold:getName(),
+    tostring(field),
+    math.max(stat.combo_counter, 0),
+    stat.b2b and 1 or 0,
+    0
+    )
+  bot_loader.think(function()
+    self.thinkFinished = true
+  end)
+  self.timer:after(1, function()
+    bot_loader.terminate()
+  end)
+end
 
-  self.rot = rot or default_rot
-  self.x = x or self:getSpawnX()
-  self.y = y or self:getSpawnY()
+function Piece:reset(name, hold)
+  self.name = name
+  self.rot = default_rot
+  self.x = self:getSpawnX()
+  self.y = self:getSpawnY()
+
   self.hold_used = false
   self.last_valid_move = 'null'
 
   self.lock_delay = 0
   self.force_lock_delay = 0
+
+  -- Update bot
+  -- if bot
+  if not hold then
+    self:updateBot()
+  end
 end
 
 function Piece:setTSpin()

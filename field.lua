@@ -20,6 +20,24 @@ function Field:initialize(state, sx, sy)
   -- Debug
 end
 
+function Field:__tostring()
+  local _field = ''
+  local colbreak = ','
+  local rowbreak = '|'
+  local rowprefix = ''
+  for i = v_grids, 1, -1 do
+    local row = ''
+    local colprefix = ''
+    for j = 1, #self.board[i] do
+      row = row .. colprefix .. (self.board[i][#self.board[i] - j + 1] == 0 and 0 or 2)
+      colprefix = colbreak
+    end
+    _field = _field .. rowprefix .. row
+    rowprefix = rowbreak
+  end
+  return _field
+end
+
 function Field:update(dt)
   Field.super.update(self, dt) -- update timer
 

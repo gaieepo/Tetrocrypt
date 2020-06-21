@@ -1,7 +1,7 @@
 -- Constants --
 default_seed = nil -- optional
 frame_time = 1/60 -- (second)
-gravity = 5
+gravity = 3
 softdrop = 300 -- coefficient
 drop_coefficient = 256
 hold_allowed = true

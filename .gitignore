@@ -1,5 +1,11 @@
+.idea/
+
 resources/
 libraries/
+bot/
 
 *.swp
 TODO*
+*.so
+*.o
+*.dylib

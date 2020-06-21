@@ -7,6 +7,10 @@ function Hold:initialize(sx, sy)
   self.sy = sy + hold_sy_offset
 end
 
+function Hold:getName()
+  if self.name == nil then return ' ' else return self.name end
+end
+
 function Hold:draw()
   if self.name then
     for i = 1, num_piece_blocks do
