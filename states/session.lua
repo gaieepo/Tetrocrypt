@@ -2,6 +2,8 @@ local Session = Game:addState('Session')
 
 function Session:enteredState()
   -- Session Env
+  self.pause = false
+  self.bot_play = false
   self.start_time = love.timer.getTime()
   self.session_duration = 0 -- (second)
   self.session_state = GAME_COUNTDOWN
@@ -12,14 +14,16 @@ function Session:enteredState()
   input:bind('escape', 'pause')
   input:bind('backspace', 'restart')
 
-  input:bind('w', 'harddrop')
-  input:bind('a', 'move_left')
-  input:bind('s', 'softdrop')
-  input:bind('d', 'move_right')
-  input:bind('k', 'piece_rotate_right')
-  input:bind('m', 'piece_rotate_left')
-  input:bind('l', 'piece_rotate_180')
-  input:bind('q', 'hold')
+  if not self.bot_play then
+    input:bind('w', 'harddrop')
+    input:bind('a', 'move_left')
+    input:bind('s', 'softdrop')
+    input:bind('d', 'move_right')
+    input:bind('k', 'piece_rotate_right')
+    input:bind('m', 'piece_rotate_left')
+    input:bind('l', 'piece_rotate_180')
+    input:bind('q', 'hold')
+  end
 
   -- Game Entities
   hold = Hold:new(self.startx, self.starty)
@@ -48,16 +52,22 @@ function Session:update(dt)
   if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end
 
   -- Switch State
-  if input:pressed('pause') then self:pushState('Pause') end
+  if input:pressed('pause') then
+    -- TODO
+    -- self:pushState('Pause')
+    self.pause = not self.pause
+  end
   if input:pressed('restart') then self:gotoState('Session') end
   if self.session_state == GAME_LOSS then self:finish() end
 
   -- Entity Update
-  if self.session_state == GAME_NORMAL then
-    field:update(dt)
+  if not self.pause then
+    if self.session_state == GAME_NORMAL then
+      field:update(dt)
 
-    if not field.clearing then
-      piece:update(dt)
+      if not field.clearing then
+        piece:update(dt)
+      end
     end
   end
 end

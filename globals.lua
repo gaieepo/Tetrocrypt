@@ -225,3 +225,16 @@ piece_shift = {
   ['1001'] =  1,
   ['1000'] =  0,
 }
+
+MOV_NULL  = 0
+MOV_L     = 1
+MOV_R     = 2
+MOV_LL    = 3
+MOV_RR    = 4
+MOV_D     = 5
+MOV_DD    = 6
+MOV_LSPIN = 7
+MOV_RSPIN = 8
+MOV_DROP  = 9
+MOV_HOLD  = 10
+MOV_SPIN2 = 11

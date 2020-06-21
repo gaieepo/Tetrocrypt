@@ -12,6 +12,8 @@ function Piece.static.getRotate180(rot)
   return (rot + 4 - 2) % 4
 end
 
+------------------------------------------
+
 function Piece:initialize(state, field, name, rot, x, y)
   Piece.super.initialize(self, state)
 
@@ -23,6 +25,7 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.y = y or self:getSpawnY()
   self.hold_used = false
   self.last_valid_move = 'null'
+  self.softdropping = false
 
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
@@ -37,6 +40,10 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.lock_delay_maximum = lock_delay_limit * frame_time
   self.force_lock_delay = 0
   self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
+
+  self.thinkFinished = false
+  self.use_bot_sequence = false
+  self.bot_sequence = {}
 
   -- Empty reset for consistency
   self:reset(self.name, false)
@@ -55,44 +62,56 @@ function Piece:update(dt)
   Piece.super.update(self, dt) -- update timer
 
   -- Input handler
-  if input:pressed('harddrop') then self:harddrop() end
-  if input:pressed('softdrop') then self:onSoftdropStart() end
-  if input:released('softdrop') then self:onSoftdropEnd() end
+  if not self.state.bot_play then
+    if input:pressed('harddrop') then self:harddrop() end
+    if input:pressed('softdrop') then self:onSoftdropStart() end
+    if input:released('softdrop') then self:onSoftdropEnd() end
 
-  -- piece shift state
-  if input:pressed('move_left') then
-    self.last_left_shift = self.left_shift
-    self.last_right_shift = self.right_shift
-    self.left_shift = '1'
-  end
-  if input:released('move_left') then
-    self.last_left_shift = self.left_shift
-    self.last_right_shift = self.right_shift
-    self.left_shift = '0'
-  end
-  if input:pressed('move_right') then
-    self.last_left_shift = self.left_shift
-    self.last_right_shift = self.right_shift
-    self.right_shift = '1'
-  end
-  if input:released('move_right') then
-    self.last_left_shift = self.left_shift
-    self.last_right_shift = self.right_shift
-    self.right_shift = '0'
-  end
-  self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
-  if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then self:moveLeft() end
-  if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then self:moveRight() end
+    -- piece shift state
+    if input:pressed('move_left') then
+      self.last_left_shift = self.left_shift
+      self.last_right_shift = self.right_shift
+      self.left_shift = '1'
+    end
+    if input:released('move_left') then
+      self.last_left_shift = self.left_shift
+      self.last_right_shift = self.right_shift
+      self.left_shift = '0'
+    end
+    if input:pressed('move_right') then
+      self.last_left_shift = self.left_shift
+      self.last_right_shift = self.right_shift
+      self.right_shift = '1'
+    end
+    if input:released('move_right') then
+      self.last_left_shift = self.left_shift
+      self.last_right_shift = self.right_shift
+      self.right_shift = '0'
+    end
+    self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
+    if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then self:moveLeft() end
+    if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then self:moveRight() end
 
-  if input:pressed('piece_rotate_right') then self:rotateRight() end
-  if input:pressed('piece_rotate_left') then self:rotateLeft() end
-  if input:pressed('piece_rotate_180') then self:rotate180() end
-  if input:pressed('hold') then self:hold() end
+    if input:pressed('piece_rotate_right') then self:rotateRight() end
+    if input:pressed('piece_rotate_left') then self:rotateLeft() end
+    if input:pressed('piece_rotate_180') then self:rotate180() end
+    if input:pressed('hold') then self:hold() end
+  end
 
   -- Passive --
+  -- Bot logic
   if self.thinkFinished then
-    print(bot_loader.getMove())
+    local bot_move = bot_loader.getMove()
+    self.bot_sequence = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
+      return tonumber(v)
+    end)
     self.thinkFinished = false
+    self.use_bot_sequence = true
+  end
+
+  if self.use_bot_sequence and #self.bot_sequence > 0 then
+    local valid = self:processBotSequence()
+    if not valid then self.use_bot_sequence = false end
   end
 
   -- Lock & Force Lock
@@ -202,6 +221,7 @@ end
 
 function Piece:onSoftdropStart()
   self.timer:cancel('autodrop')
+  self.softdropping = true
 
   self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
     if not self:collide(self.x, self.y - 1, self.rot, self.field) then
@@ -212,6 +232,7 @@ end
 
 function Piece:onSoftdropEnd()
   self.timer:cancel('softdrop')
+  self.softdropping = false
 
   self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
     if not self:collide(self.x, self.y - 1, self.rot, self.field) then
@@ -221,23 +242,29 @@ function Piece:onSoftdropEnd()
 end
 
 function Piece:moveLeft()
-    if not self:collide(self.x - 1, nil, nil, nil) then
-      self.x = self.x - 1
+  if not self:collide(self.x - 1, nil, nil, nil) then
+    self.x = self.x - 1
 
-      -- reset lock delay only when movable
-      self.lock_delay = 0
-      self.last_valid_move = 'shift'
-    end
+    -- reset lock delay only when movable
+    self.lock_delay = 0
+    self.last_valid_move = 'shift'
+    return true
+  else
+    return false
+  end
 end
 
 function Piece:moveRight()
-    if not self:collide(self.x + 1, nil, nil, nil) then
-      self.x = self.x + 1
+  if not self:collide(self.x + 1, nil, nil, nil) then
+    self.x = self.x + 1
 
-      -- reset lock delay only when movable
-      self.lock_delay = 0
-      self.last_valid_move = 'shift'
-    end
+    -- reset lock delay only when movable
+    self.lock_delay = 0
+    self.last_valid_move = 'shift'
+    return true
+  else
+    return false
+  end
 end
 
 function Piece:rotateRight()
@@ -337,7 +364,7 @@ function Piece:updateBot()
   bot_loader.think(function()
     self.thinkFinished = true
   end)
-  self.timer:after(1, function()
+  self.timer:after(5, function()
     bot_loader.terminate()
   end)
 end
@@ -356,7 +383,7 @@ function Piece:reset(name, hold)
 
   -- Update bot
   -- if bot
-  if not hold then
+  if self.state.bot_play and not hold then
     self:updateBot()
   end
 end
@@ -387,4 +414,65 @@ function Piece:setTSpin()
 end
 
 function Piece:setAllSpin()
+  -- (Optional) refer to nullpomino
+end
+
+-- Bot logic
+function Piece:processBotSequence()
+  -- MOV_NULL  = 0
+  -- MOV_L     = 1
+  -- MOV_R     = 2
+  -- MOV_LL    = 3
+  -- MOV_RR    = 4
+  -- MOV_D     = 5
+  -- MOV_DD    = 6
+  -- MOV_LSPIN = 7
+  -- MOV_RSPIN = 8
+  -- MOV_DROP  = 9
+  -- MOV_HOLD  = 10
+  -- MOV_SPIN2 = 11
+  if #self.bot_sequence == 0 then
+    return false
+  end
+
+  if self.bot_sequence[1] == MOV_HOLD then
+    self:hold()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_L then
+    self:moveLeft()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_R then
+    self:moveRight()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_D then
+    -- TODO MOV_D
+  elseif self.bot_sequence[1] == MOV_DROP then
+    self:harddrop()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_LSPIN then
+    self:rotateLeft()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_RSPIN then
+    self:rotateRight()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_SPIN2 then
+    self:rotate180()
+    table.remove(self.bot_sequence, 1)
+  elseif self.bot_sequence[1] == MOV_LL then
+    local valid = self:moveLeft()
+    if not valid then table.remove(self.bot_sequence, 1) end
+  elseif self.bot_sequence[1] == MOV_RR then
+    local valid = self:moveRight()
+    if not valid then table.remove(self.bot_sequence, 1) end
+  elseif self.bot_sequence[1] == MOV_DD then
+    if not self.softdropping then
+      self:onSoftdropStart()
+    end
+    if self:collide(nil, self.y - 1, nil, nil) then self:onSoftdropEnd() end
+    table.remove(self.bot_sequence, 1)
+  else
+    table.remove(self.bot_sequence, 1)
+  end
+
+  return true
 end

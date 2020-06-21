@@ -18,6 +18,10 @@ function table.full(t)
   return true
 end
 
+function table.shift(t)
+  return table.remove(t, 1)
+end
+
 function table.empty(t)
   for i = 1, #t do
     if t[i] ~= 0 then return false end

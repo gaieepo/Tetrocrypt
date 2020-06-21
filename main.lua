@@ -3,6 +3,7 @@ Inspect = require 'libraries/inspect/inspect'
 
 -- Libraries
 fn = require 'libraries/Moses/moses'
+lume = require 'libraries/lume/lume'
 Stateful = require 'libraries/stateful/stateful'
 Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
