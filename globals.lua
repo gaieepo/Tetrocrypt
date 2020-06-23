@@ -1,7 +1,7 @@
 -- Constants --
 default_seed = nil -- optional
 frame_time = 1/60 -- (second)
-gravity = 3
+gravity = 5
 softdrop = 300 -- coefficient
 drop_coefficient = 256
 hold_allowed = true
@@ -10,7 +10,7 @@ default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 0 -- (frame)
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
-bot_play = false
+bot_play = true
 
 GAME_NORMAL = 0
 GAME_WIN = 1
@@ -75,6 +75,15 @@ arr = 0 -- (frame)
 num_piece_blocks = 4
 default_rot = 0
 piece_names = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
+bot_piece_names = {
+  ['S'] = 'Z',
+  ['Z'] = 'S',
+  ['L'] = 'J',
+  ['J'] = 'L',
+  ['T'] = 'T',
+  ['O'] = 'O',
+  ['I'] = 'I',
+}
 piece_ids = {
   ['S'] = 1,
   ['Z'] = 2,

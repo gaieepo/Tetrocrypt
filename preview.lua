@@ -63,7 +63,7 @@ function Preview:peakString(n)
   local delimiter = ','
   local d = ''
   for i = 1, n do
-    _nextn = _nextn .. d .. piece_names[self.queue[i]]
+    _nextn = _nextn .. d .. bot_piece_names[piece_names[self.queue[i]]]
     d = delimiter
   end
   return _nextn

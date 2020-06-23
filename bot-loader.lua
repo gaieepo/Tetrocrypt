@@ -51,6 +51,7 @@ else
   end
 
   function loader.updateBot(queue, curr, hold, field, combo, b2b, incoming)
+    print(queue, curr, hold)
     bot.updatequeue(queue)
     bot.updatecurrent(curr)
     bot.updatehold(hold)

@@ -25,8 +25,9 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.y = y or self:getSpawnY()
   self.hold_used = false
   self.last_valid_move = 'null'
-  self.softdropping = false
+  self.softdropping = false -- not used
 
+  self.softdrop_delay = drop_coefficient * frame_time / softdrop
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
 
@@ -66,8 +67,9 @@ function Piece:update(dt)
   -- Input handler
   if not self.state.bot_play then
     if input:pressed('harddrop') then self:harddrop() end
-    if input:pressed('softdrop') then self:onSoftdropStart() end
-    if input:released('softdrop') then self:onSoftdropEnd() end
+    -- if input:pressed('softdrop') then self:onSoftdropStart() end
+    -- if input:released('softdrop') then self:onSoftdropEnd() end
+    if input:down('softdrop', self.softdrop_delay) then self:softdrop() end
 
     -- piece shift state
     if input:pressed('move_left') then
@@ -107,6 +109,7 @@ function Piece:update(dt)
     self.bot_sequence = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
+    print(Inspect(self.bot_sequence))
     self.thinkFinished = false
     self.use_bot_sequence = true
   end
@@ -221,6 +224,15 @@ function Piece:harddrop()
   self.lock_delay = self.lock_delay_maximum
 end
 
+function Piece:softdrop()
+  if not self:collide(nil, self.y - 1, nil, nil) then
+    self.y = self.y - 1
+    return true
+  end
+  return false
+end
+
+-- not used
 function Piece:onSoftdropStart()
   self.timer:cancel('autodrop')
   self.softdropping = true
@@ -232,6 +244,7 @@ function Piece:onSoftdropStart()
   end)
 end
 
+-- not used
 function Piece:onSoftdropEnd()
   self.timer:cancel('softdrop')
   self.softdropping = false
@@ -358,8 +371,8 @@ function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
     preview:peakString(num_preview), -- default 6
-    self.name,
-    hold:getName(),
+    bot_piece_names[self.name],
+    bot_piece_names[hold:getName()],
     tostring(field),
     math.max(stat.combo_counter, 0),
     stat.b2b and 1 or 0,
@@ -449,7 +462,8 @@ function Piece:processBotSequence()
     self:moveRight()
     table.remove(self.bot_sequence, 1)
   elseif self.bot_sequence[1] == MOV_D then
-    -- TODO MOV_D
+    self:softdrop()
+    table.remove(self.bot_sequence, 1)
   elseif self.bot_sequence[1] == MOV_DROP then
     self:harddrop()
     table.remove(self.bot_sequence, 1)
@@ -469,11 +483,8 @@ function Piece:processBotSequence()
     local valid = self:moveRight()
     if not valid then table.remove(self.bot_sequence, 1) end
   elseif self.bot_sequence[1] == MOV_DD then
-    if not self.softdropping then
-      self:onSoftdropStart()
-    end
-    if self:collide(nil, self.y - 1, nil, nil) then self:onSoftdropEnd() end
-    table.remove(self.bot_sequence, 1)
+    local valid = self:softdrop()
+    if not valid then table.remove(self.bot_sequence, 1) end
   else
     table.remove(self.bot_sequence, 1)
   end
