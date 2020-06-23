@@ -45,6 +45,8 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.thinkFinished = false
   self.use_bot_sequence = false
   self.bot_sequence = {}
+  self.bot_move_delay = bot_move_delay * frame_time
+  self.bot_last_move = 0
 
   -- Empty reset for consistency
   self:reset(self.name, false)
@@ -114,8 +116,12 @@ function Piece:update(dt)
   end
 
   if self.use_bot_sequence and #self.bot_sequence > 0 then
-    local valid = self:processBotSequence()
-    if not valid then self.use_bot_sequence = false end
+    if love.timer.getTime() - self.bot_last_move > self.bot_move_delay then
+      local valid = self:processBotSequence()
+      if not valid then self.use_bot_sequence = false end
+
+      self.bot_last_move = love.timer.getTime()
+    end
   end
 
   -- Lock & Force Lock
