@@ -27,7 +27,7 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.last_valid_move = 'null'
   self.softdropping = false -- not used
 
-  self.softdrop_delay = drop_coefficient * frame_time / softdrop
+  self.softdrop_delay = drop_coefficient * frame_time / softdrop_constant
   self.shift_delay = das * frame_time
   self.arr_delay = arr * frame_time
 
@@ -109,7 +109,6 @@ function Piece:update(dt)
     self.bot_sequence = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
-    print(Inspect(self.bot_sequence))
     self.thinkFinished = false
     self.use_bot_sequence = true
   end
@@ -370,7 +369,7 @@ end
 function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
-    preview:peakString(num_preview), -- default 6
+    preview:peakString(num_bot_preview),
     bot_piece_names[self.name],
     bot_piece_names[hold:getName()],
     tostring(field),
@@ -381,26 +380,25 @@ function Piece:updateBot()
   bot_loader.think(function()
     self.thinkFinished = true
   end)
-  self.timer:after(1, function()
+  self.timer:after(0.3, function()
     bot_loader.terminate()
   end)
 end
 
-function Piece:reset(name, hold)
+function Piece:reset(name, use_hold)
   self.name = name
   self.rot = default_rot
   self.x = self:getSpawnX()
   self.y = self:getSpawnY()
   self.hold_used = false
   self.last_valid_move = 'null'
-  self.softdropping = false
 
   self.shift_direction = 0
   self.lock_delay = 0
   self.force_lock_delay = 0
 
   -- Update bot
-  if self.state.bot_play and not hold then
+  if self.state.bot_play and not use_hold then
     self:updateBot()
   end
 end

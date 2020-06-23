@@ -3,11 +3,16 @@ local bot = require 'GaiAI'
 local loader = {}
 
 local params = {
-  13, 9, 17, 10, -300,
-  25, 39, 2, 12, 19,
-  7, -300, 21, 16, 9,
-  19, 0, 500, 0, 0,
-  200
+  -- 13, 9, 17, 10, -300,
+  -- 25, 39, 2, 12, 19,
+  -- 7, -300, 21, 16, 9,
+  -- 19, 0, 500, 0, 0,
+  -- 200
+  16,  9, 11, 17, 17,
+  25, 39,  2, 12, 19,
+  7, 24, 18,  7, 14,
+  19, 99, 14, 19,  0,
+  0,
 }
 local holdallowed = true
 local allspin = false
@@ -51,7 +56,7 @@ else
   end
 
   function loader.updateBot(queue, curr, hold, field, combo, b2b, incoming)
-    print(queue, curr, hold)
+    -- print(queue, curr, hold)
     bot.updatequeue(queue)
     bot.updatecurrent(curr)
     bot.updatehold(hold)
