@@ -22,13 +22,11 @@ local searchwidth = 1000 -- 1000 optimal
 local loaded = ...
 
 if loaded == true then
-  local request, move
-
   while true do
     local requestChannel = love.thread.getChannel('request')
-    request = requestChannel:pop()
+    local request = requestChannel:pop()
     if request == true then
-      move = bot.move()
+      local move = bot.move()
       local producer = love.thread.getChannel('move')
       producer:push(move)
     end
@@ -40,9 +38,10 @@ else
 
   local function getFinishedMoveIfAvailable()
     local consumer = love.thread.getChannel('move')
-    move = consumer:pop()
+    local move = consumer:pop()
     if move then
       _move = move
+      print(move)
       thinkFinished()
     end
   end
