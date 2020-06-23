@@ -169,7 +169,31 @@ end
 function Field:debugC4W()
   local g = function(v) return v * garbage_block_value end
   self.board[1] = fn.mapi({1, 1, 1, 1, 1, 1, 0, 1, 1, 1}, g)
-  for i = 2, v_grids do
+  for i = 2, v_grids + x_grids do
     self.board[i] = fn.mapi({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, g)
   end
+end
+
+function Field:debugComplexTSpin()
+  local g = function(v) return v * garbage_block_value end
+  self.board[10] = fn.mapi({0,0,0,0,0,0,0,0,0,0}, g)
+  self.board[19] = fn.mapi({0,0,0,0,0,0,0,0,0,0}, g)
+  self.board[18] = fn.mapi({1,1,1,1,0,0,0,0,0,0}, g)
+  self.board[17] = fn.mapi({1,1,1,0,0,0,0,0,1,1}, g)
+  self.board[16] = fn.mapi({1,1,1,0,1,1,1,1,1,1}, g)
+  self.board[15] = fn.mapi({1,1,1,0,0,0,0,1,1,1}, g)
+  self.board[14] = fn.mapi({1,1,1,0,0,0,1,1,1,1}, g)
+  self.board[13] = fn.mapi({1,1,1,1,1,0,0,1,1,1}, g)
+  self.board[11] = fn.mapi({1,1,1,1,1,0,0,0,1,1}, g)
+  self.board[11] = fn.mapi({1,1,1,1,1,1,1,0,1,1}, g)
+  self.board[10] = fn.mapi({1,1,1,1,1,1,0,0,1,1}, g)
+  self.board[9] = fn.mapi({1,1,1,1,0,0,0,0,1,1}, g)
+  self.board[8] = fn.mapi({1,1,1,1,0,0,0,1,1,1}, g)
+  self.board[7] = fn.mapi({1,1,1,1,0,0,1,1,1,1}, g)
+  self.board[6] = fn.mapi({1,1,1,1,0,0,0,1,1,1}, g)
+  self.board[5] = fn.mapi({1,1,1,1,1,1,0,1,1,1}, g)
+  self.board[4] = fn.mapi({1,1,1,1,1,0,0,0,1,1}, g)
+  self.board[3] = fn.mapi({1,1,1,1,1,1,0,1,1,1}, g)
+  self.board[1] = fn.mapi({1,1,1,1,0,1,1,1,1,1}, g)
+  self.board[1] = fn.mapi({1,1,1,1,1,0,1,1,1,1}, g)
 end

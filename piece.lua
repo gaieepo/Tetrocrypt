@@ -380,7 +380,7 @@ function Piece:updateBot()
   bot_loader.think(function()
     self.thinkFinished = true
   end)
-  self.timer:after(0.3, function()
+  self.timer:after(think_duration, function()
     bot_loader.terminate()
   end)
 end

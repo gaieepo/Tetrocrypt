@@ -9,12 +9,13 @@ num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 30 -- (frame)
+num_preview = 6
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
 -- Bot --
 bot_play = true
-num_preview = 6
-num_bot_preview = 14
+num_bot_preview = 6
+think_duration = 1
 
 GAME_NORMAL = 0
 GAME_WIN = 1
