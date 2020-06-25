@@ -1,4 +1,20 @@
-Entity = class('Entity')
+local Each = require 'modules/Each'
+
+Entity = class('Entity'):include(Each)
+
+function Entity.static:drawAll()
+  self:each('draw')
+end
+
+function Entity.static:updateAll(dt)
+  self:safeEach('update', dt)
+end
+
+function Entity.static:destroyAll()
+  self:safeEach('destroy')
+end
+
+------------------------------------
 
 function Entity:initialize(state)
   -- local opts = opts or {}
