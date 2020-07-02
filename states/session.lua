@@ -116,3 +116,7 @@ end
 function Session:finish()
   -- Finishing content
 end
+
+function Session:exitedState()
+  bot_loader.terminate()
+end
