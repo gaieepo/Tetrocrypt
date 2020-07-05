@@ -7,6 +7,14 @@ function UUID()
   return (('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'):gsub('[xy]', f))
 end
 
+function human_time(t) -- (second)
+  local _minutes = math.floor(t / 60)
+  local _seconds = math.floor(t % 60)
+  local _millis = math.floor(t % 1 / 0.01)
+  return string.format('%02d', _minutes) .. ':' .. string.format('%02d', _seconds) .. ':' .. _millis
+end
+
+-- Table Utilities --
 function table.random(t)
   return t[love.math.random(1, #t)]
 end
@@ -35,6 +43,13 @@ function table.zeros(l) -- generate a table with l number of zeros
   return _t
 end
 
+function table.onezero(l)
+  local _t = {}
+  for i = 1, l do _t[i] = 1 end
+  _t[love.math.random(1, l)] = 0
+  return _t
+end
+
 function table.shuffle(t)
   local _shuffled = {}
   for index, value in ipairs(t) do
@@ -55,11 +70,4 @@ function table.copy(t)
     copy = t
   end
   return copy
-end
-
-function human_time(t) -- (second)
-  local _minutes = math.floor(t / 60)
-  local _seconds = math.floor(t % 60)
-  local _millis = math.floor(t % 1 / 0.01)
-  return string.format('%02d', _minutes) .. ':' .. string.format('%02d', _seconds) .. ':' .. _millis
 end

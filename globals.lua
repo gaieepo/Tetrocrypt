@@ -66,6 +66,8 @@ field_sx_offset = 150 -- (pixel)
 field_sy_offset = 550 -- (pixel)
 garbage_block_value = 10
 empty_block_value = 0
+dig_mode = false
+dig_delay = 1
 
 -- Stat
 stat_sx_offset = 550

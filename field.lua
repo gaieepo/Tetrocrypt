@@ -17,7 +17,12 @@ function Field:initialize(state, sx, sy)
     self.board[r] = row
   end
 
-  -- Debug
+  -- Debug (TODO will collide with down piece -> false game loss state trigger)
+  if dig_mode then
+    self.timer:every('dig', dig_delay, function()
+      self:singleGarbage()
+    end)
+  end
 end
 
 function Field:__tostring()
@@ -46,6 +51,7 @@ function Field:update(dt)
     stat:updateStatus(lines)
     self.trigger_update = false
   end
+
   if lines > 0 then
     self.clearing = true
     self:clearLines()
@@ -142,6 +148,14 @@ function Field:fallStack()
       end
     end
   end
+end
+
+function Field:singleGarbage(t)
+  local g = function(v) return v * garbage_block_value end
+  for r = v_grids + x_grids, 2, -1 do
+    self.board[r] = table.copy(self.board[r - 1])
+  end
+  self.board[1] = fn.mapi(table.onezero(h_grids), g)
 end
 
 -- Debug --
