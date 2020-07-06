@@ -19,9 +19,7 @@ function Field:initialize(state, sx, sy)
 
   -- Debug (TODO will collide with down piece -> false game loss state trigger)
   if dig_mode then
-    self.timer:every('dig', dig_delay, function()
-      self:singleGarbage()
-    end)
+    self.dig_accumulator = 0
   end
 end
 
@@ -59,6 +57,10 @@ function Field:update(dt)
       self:fallStack()
       self.clearing = false
     end)
+  end
+
+  if dig_mode and self.dig_accumulator then
+    self.dig_accumulator = self.dig_accumulator + dt
   end
 end
 
@@ -104,6 +106,14 @@ function Field:addPiece(name, rot, x, y)
 
   -- Trigger stat update
   self.trigger_update = true
+
+  -- Dig mode logic
+  if dig_mode and self.dig_accumulator then
+    if self.dig_accumulator > dig_delay then
+      self:singleGarbage()
+      self.dig_accumulator = 0
+    end
+  end
 end
 
 function Field:getBlock(x, y)
