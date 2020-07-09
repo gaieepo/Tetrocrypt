@@ -15,8 +15,10 @@ spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 -- Bot --
 bot_play = false
 num_bot_preview = 6
-think_duration = 0.1
+think_duration = 0.2
 bot_move_delay = 1 -- (frame)
+pc_finder_play = true
+pc_finder_think_duration = 0.1
 
 GAME_NORMAL = 0
 GAME_WIN = 1

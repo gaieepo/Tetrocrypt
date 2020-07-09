@@ -42,11 +42,13 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.force_lock_delay = 0
   self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
 
+  -- Bot
   self.thinkFinished = false
   self.use_bot_sequence = false
   self.bot_sequence = {}
   self.bot_move_delay = bot_move_delay * frame_time
   self.bot_last_move = 0
+  self.pcFinderThinkFinished = false
 
   -- Empty reset for consistency
   self:reset(self.name, false)
@@ -113,6 +115,11 @@ function Piece:update(dt)
     end)
     self.thinkFinished = false
     self.use_bot_sequence = true
+  end
+
+  if self.pcFinderThinkFinished then
+    local solution = pc_finder.getSolution()
+    self.thinkFinished = false
   end
 
   if self.use_bot_sequence and #self.bot_sequence > 0 then
@@ -391,6 +398,16 @@ function Piece:updateBot()
   end)
 end
 
+function Piece:updatePCFinder()
+  self.pcFinderThinkFinished = false
+  pc_finder.action(function()
+    self.pcFinderThinkFinished = true
+  end)
+  self.timer:after(pc_finder_think_duration, function()
+    pc_finder.terminate()
+  end)
+end
+
 function Piece:reset(name, use_hold)
   self.name = name
   self.rot = default_rot
@@ -406,6 +423,10 @@ function Piece:reset(name, use_hold)
   -- Update bot
   if self.state.bot_play and not use_hold then
     self:updateBot()
+  end
+
+  if self.state.pc_finder_play and not use_hold then
+    self:updatePCFinder()
   end
 end
 

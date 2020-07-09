@@ -9,6 +9,7 @@ Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
 class = require 'libraries/middleclass/middleclass'
 bot_loader = require 'bot-loader'
+pc_finder = require 'pc-finder'
 
 require 'globals'
 require 'utils'
@@ -33,6 +34,7 @@ function love.load()
 
   -- Bot Loader
   if bot_play then bot_loader.start() end
+  if pc_finder_play then pc_finder.start() end
 
   -- Memory Debug
   input:bind('space', function()
@@ -54,6 +56,7 @@ function love.update(dt)
 
   -- Bot update
   if bot_play then bot_loader.update() end
+  if pc_finder_play then pc_finder.update() end
 end
 
 function love.draw()
