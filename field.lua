@@ -23,7 +23,7 @@ function Field:initialize(state, sx, sy)
   end
 end
 
-function Field:__tostring()
+function Field:convertBotStr()
   local _field = ''
   local colbreak = ','
   local rowbreak = '|'
@@ -39,6 +39,27 @@ function Field:__tostring()
     rowprefix = rowbreak
   end
   return _field
+end
+
+function Field:convertPCFinderStr()
+  local _field = ''
+  for i = v_grids, 1, -1 do
+    local row = ''
+    for j = 1, #self.board[i] do
+      row = row .. (self.board[i][j] == 0 and '_' or 'X')
+    end
+    _field = _field .. row
+  end
+  return _field
+end
+
+function Field:getHeight()
+  local h = -1
+  for i = v_grids, 1, -1 do
+    if not table.empty(self.board[i]) and h == -1 then h = i end
+  end
+  if h == -1 then h = 2 end
+  return h
 end
 
 function Field:update(dt)

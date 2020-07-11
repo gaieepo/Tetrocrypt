@@ -58,13 +58,21 @@ function Preview:peak(n)
   return _nextn
 end
 
-function Preview:peakString(n)
+function Preview:peakBotString(n)
   local _nextn = ''
   local delimiter = ','
   local d = ''
   for i = 1, n do
     _nextn = _nextn .. d .. bot_piece_names[piece_names[self.queue[i]]]
     d = delimiter
+  end
+  return _nextn
+end
+
+function Preview:peakString(n)
+  local _nextn = ''
+  for i = 1, n do
+    _nextn = _nextn .. piece_names[self.queue[i]]
   end
   return _nextn
 end

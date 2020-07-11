@@ -7,8 +7,12 @@ function Hold:initialize(sx, sy)
   self.sy = sy + hold_sy_offset
 end
 
-function Hold:getName()
+function Hold:getBotName()
   if self.name == nil then return ' ' else return self.name end
+end
+
+function Hold:getPCFinderName()
+  if self.name == nil then return 'E' else return self.name end
 end
 
 function Hold:draw()

@@ -382,10 +382,10 @@ end
 function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
-    preview:peakString(num_bot_preview),
+    preview:peakBotString(num_bot_preview),
     bot_piece_names[self.name],
-    bot_piece_names[hold:getName()],
-    tostring(field),
+    bot_piece_names[hold:getBotName()],
+    field:convertBotStr(),
     math.max(stat.combo_counter, 0),
     stat.b2b and 1 or 0,
     0
@@ -400,6 +400,14 @@ end
 
 function Piece:updatePCFinder()
   self.pcFinderThinkFinished = false
+  pc_finder.updatePCFinder(
+    field:convertPCFinderStr(),
+    preview:peakString(num_pcfinder_preview),
+    hold:getPCFinderName(),
+    field:getHeight(),
+    math.max(stat.combo_counter, 0),
+    stat.b2b
+    )
   pc_finder.action(function()
     self.pcFinderThinkFinished = true
   end)
