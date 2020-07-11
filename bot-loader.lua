@@ -105,7 +105,7 @@ else
 
   function loader.update()
     if loader.thread then
-      if loader.thread:isRunning() then
+      if loader.thread:isRunning() and bot.alive() then
         getFinishedMoveIfAvailable()
       else
         local errorMessage = loader.thread:getError()
@@ -116,6 +116,14 @@ else
 
   function loader.getMove()
     return _move
+  end
+
+  function loader.findPath(field, piece, x, y, r, hold)
+    -- print(field)
+    -- print(piece)
+    -- print(x, y, r)
+    -- print(hold)
+    return bot.findPath(field, piece, x, y, r, hold)
   end
 
   return loader

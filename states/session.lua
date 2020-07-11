@@ -4,7 +4,7 @@ function Session:enteredState()
   -- Session Env
   self.pause = false
   self.bot_play = bot_play
-  self.pc_finder_play = pc_finder_play
+  self.pcfinder_play = pcfinder_play
   self.start_time = love.timer.getTime()
   self.session_duration = 0 -- (second)
   self.session_state = GAME_COUNTDOWN

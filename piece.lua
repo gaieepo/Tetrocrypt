@@ -12,6 +12,11 @@ function Piece.static.getRotate180(rot)
   return (rot + 4 - 2) % 4
 end
 
+function Piece.static.getHorizontalFlip(rot)
+  if rot == 1 then return 3 end
+  if rot == 3 then return 1 end
+end
+
 ------------------------------------------
 
 function Piece:initialize(state, field, name, rot, x, y)
@@ -110,16 +115,18 @@ function Piece:update(dt)
   -- Bot logic
   if self.thinkFinished then
     local bot_move = bot_loader.getMove()
-    self.bot_sequence = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
+    local seq = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
+    if #self.bot_sequence == 0 then self.bot_sequence = fn.clone(seq) end  -- use bot only when sequence empty
     self.thinkFinished = false
     self.use_bot_sequence = true
   end
 
   if self.pcFinderThinkFinished then
     local solution = pc_finder.getSolution()
-    self.thinkFinished = false
+    self:preprocessPCSolution(solution)
+    self.pcFinderThinkFinished = false
   end
 
   if self.use_bot_sequence and #self.bot_sequence > 0 then
@@ -400,18 +407,18 @@ end
 
 function Piece:updatePCFinder()
   self.pcFinderThinkFinished = false
-  pc_finder.updatePCFinder(
+  pc_finder.action(
+    function()
+      self.pcFinderThinkFinished = true
+    end,
     field:convertPCFinderStr(),
-    preview:peakString(num_pcfinder_preview),
+    self.name .. preview:peakString(num_pcfinder_preview),
     hold:getPCFinderName(),
-    field:getHeight(),
+    field:getPCHeight(),
     math.max(stat.combo_counter, 0),
     stat.b2b
     )
-  pc_finder.action(function()
-    self.pcFinderThinkFinished = true
-  end)
-  self.timer:after(pc_finder_think_duration, function()
+  self.timer:after(pcfinder_think_duration, function()
     pc_finder.terminate()
   end)
 end
@@ -433,9 +440,11 @@ function Piece:reset(name, use_hold)
     self:updateBot()
   end
 
-  if self.state.pc_finder_play and not use_hold then
+  if self.state.pcfinder_play and not use_hold then
     self:updatePCFinder()
   end
+
+  if not use_hold then self.bot_sequence = {} end  -- make sure bot seq empty for every no-hold new piece
 end
 
 function Piece:setTSpin()
@@ -523,4 +532,26 @@ function Piece:processBotSequence()
   end
 
   return true
+end
+
+function Piece:preprocessPCSolution(solution)
+  print(solution)
+  if solution == nil or solution == '-1' then return end
+  local sol = lume.split(lume.split(solution, '|')[1], ',')
+  local name = pcfinder_piece_names[tonumber(sol[1]) + 1]
+  local x = tonumber(sol[2])
+  local y = tonumber(sol[3])
+  local rot = tonumber(sol[4])
+  print(name, x, y, rot)
+  x = x + pcfinder_offset[name][rot + 1][1]
+  y = y + pcfinder_offset[name][rot + 1][2]
+  print(x, y)
+
+  local path = bot_loader.findPath(field:convertBotStr(),
+    bot_piece_names[name], x, 20 - y, self.class.getHorizontalFlip(rot), name ~= self.name)
+  local seq = fn.map(lume.split(lume.split(path, '|')[1], ','), function(v )
+    return tonumber(v)
+  end)
+  if #self.bot_sequence == 0 then self.bot_sequence = fn.clone(seq) end
+  bot_loader.terminate() -- bot terminate in advance
 end

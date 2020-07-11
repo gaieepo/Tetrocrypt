@@ -34,7 +34,7 @@ function love.load()
 
   -- Bot Loader
   if bot_play then bot_loader.start() end
-  if pc_finder_play then pc_finder.start() end
+  if pcfinder_play then pc_finder.start() end
 
   -- Memory Debug
   input:bind('space', function()
@@ -56,7 +56,7 @@ function love.update(dt)
 
   -- Bot update
   if bot_play then bot_loader.update() end
-  if pc_finder_play then pc_finder.update() end
+  if pcfinder_play then pc_finder.update() end
 end
 
 function love.draw()
@@ -112,7 +112,7 @@ end
 function love.run()
   -- Random Seed (optional)
   -- math.randomseed(default_seed or os.time())
-  -- if love.math then love.math.setRandomSeed(default_seed or os.time()) end
+  if love.math then love.math.setRandomSeed(default_seed or os.time()) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
@@ -157,5 +157,13 @@ function love.run()
     end
 
     if love.timer then love.timer.sleep(0.001) end
+  end
+end
+
+function love.quit()
+  if bot_play then bot_loader.terminate() end
+  if pcfinder_play then
+    pc_finder.terminate()
+    -- pc_finder.shutdown()
   end
 end

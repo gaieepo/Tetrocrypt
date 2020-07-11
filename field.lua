@@ -53,7 +53,7 @@ function Field:convertPCFinderStr()
   return _field
 end
 
-function Field:getHeight()
+function Field:getPCHeight()
   local h = -1
   for i = v_grids, 1, -1 do
     if not table.empty(self.board[i]) and h == -1 then h = i end

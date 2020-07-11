@@ -8,6 +8,12 @@ local pcfinder = require 'PCFinder'
 --   return res
 -- end
 --
+local function printf(f)
+  for i = 1, #f, 10 do
+    print(f:sub(i, i + 9))
+  end
+end
+--
 -- local matrix = {
 --   '__________',
 --   '__________',
@@ -26,13 +32,11 @@ local pcfinder = require 'PCFinder'
 --   '__________',
 --   '__________',
 --   '__________',
---   '__________',
---   '__________',
---   '__________',
---   -- 'XXXX__XXXX',
---   -- 'XXX__XXXXX',
+--   'XX________',
+--   'XXX__X_XX_',
+--   'XXX__XXXXX',
 -- }
--- local queue = 'SZLJTOISZLJTOI'
+-- local queue = 'SITLTSIZJOZLO'
 
 local finder = {}
 
@@ -43,17 +47,17 @@ if loaded == true then
   local swap = false
   local searchtype = 0
 
+  -- pcfinder.setThread(2)
+
   while true do
-    local requestChannel = love.thread.getChannel('request')
-    local request = requestChannel:pop()
-    if request then
-      -- local solution = pcfinder.action(convertfield(matrix), queue, 'E',
-      --   2, max_height, swap, searchtype, 0, false)
-      local solution = pcfinder.action(request[1], request[2], request[3],
-        request[4], max_height, swap, searchtype, request[5], request[6])
-      -- for i = 1, 6 do
-      --   print(request[i])
-      -- end
+    local requestChannel = love.thread.getChannel('pcrequest')
+    local req = requestChannel:pop()
+    if req then
+      local solution = pcfinder.action(req[1], req[2], req[3],
+        req[4], max_height, swap, searchtype, req[5], req[6])
+      printf(req[1])
+      print(req[2], req[3])
+      print(req[4], req[5], req[6])
       local producer = love.thread.getChannel('solution')
       producer:push(solution)
     end
@@ -62,25 +66,15 @@ else
   local thinkFinished
   local pathToThisFile = (...):gsub('%.', '/') .. '.lua'
   local _solution
-  local field, queue, hold, height, combo, b2b
 
   local function getFoundSolutionIfAvailable()
     local consumer = love.thread.getChannel('solution')
     local solution = consumer:pop()
     if solution then
       _solution = solution
-      print(solution)
+      -- print(solution)
       thinkFinished()
     end
-  end
-
-  function finder.updatePCFinder(fld, que, hd, h, c, b)
-    field = fld
-    queue = que
-    hold = hd
-    height = h
-    combo = c
-    b2b = b
   end
 
   function finder.start()
@@ -89,13 +83,13 @@ else
     finder.thread = thread
   end
 
-  function finder.action(thinkFinishedCallback)
+  function finder.action(thinkFinishedCallback, field, queue, hold, height, combo, b2b)
     pcfinder.updatethinking(true)
 
     thinkFinished = thinkFinishedCallback or function() end
 
-    local request = love.thread.getChannel('request')
-    request:push({field, queue, hold, height, combo, b2b})
+    local requestChannel = love.thread.getChannel('pcrequest')
+    requestChannel:push({field, queue, hold, height, combo, b2b})
   end
 
   function finder.terminate()
@@ -115,6 +109,10 @@ else
 
   function finder.getSolution()
     return _solution
+  end
+
+  function finder.shutdown()
+    pcfinder.shutdown()
   end
 
   return finder
