@@ -8,7 +8,7 @@ hold_allowed = true
 num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 20
-line_clear_delay = 0 -- (frame)
+line_clear_delay = 1 -- (frame)
 num_preview = 6
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
@@ -16,8 +16,8 @@ spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 bot_play = true
 num_bot_preview = 14
 think_duration = 0.2
-bot_move_delay = 1 -- (frame)
-pcfinder_play = true
+bot_move_delay = 10 -- (frame)
+pcfinder_play = false
 num_pcfinder_preview = 14
 pcfinder_think_duration = 0.1
 

@@ -15,6 +15,7 @@ end
 function Piece.static.getHorizontalFlip(rot)
   if rot == 1 then return 3 end
   if rot == 3 then return 1 end
+  return rot
 end
 
 ------------------------------------------
@@ -47,9 +48,12 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.force_lock_delay = 0
   self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
 
+  self.reset_done = false
+
   -- Bot
   self.thinkFinished = false
   self.use_bot_sequence = false
+  self.pc_sequence = {}
   self.bot_sequence = {}
   self.bot_move_delay = bot_move_delay * frame_time
   self.bot_last_move = 0
@@ -118,9 +122,11 @@ function Piece:update(dt)
     local seq = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
-    if #self.bot_sequence == 0 then self.bot_sequence = fn.clone(seq) end  -- use bot only when sequence empty
+    if #self.bot_sequence == 0 and #self.pc_sequence == 0 then
+      self.bot_sequence = fn.clone(seq)
+    end  -- use bot only when both sequences are empty
     self.thinkFinished = false
-    self.use_bot_sequence = true
+    self.use_bot_sequence = true -- start movement after both bot and pc done (TODO we assume pc faster than bot)
   end
 
   if self.pcFinderThinkFinished then
@@ -535,23 +541,46 @@ function Piece:processBotSequence()
 end
 
 function Piece:preprocessPCSolution(solution)
-  print(solution)
-  if solution == nil or solution == '-1' then return end
-  local sol = lume.split(lume.split(solution, '|')[1], ',')
-  local name = pcfinder_piece_names[tonumber(sol[1]) + 1]
-  local x = tonumber(sol[2])
-  local y = tonumber(sol[3])
-  local rot = tonumber(sol[4])
-  print(name, x, y, rot)
-  x = x + pcfinder_offset[name][rot + 1][1]
-  y = y + pcfinder_offset[name][rot + 1][2]
-  print(x, y)
+  -- Update new sequence
+  if solution ~= nil and solution ~= '-1' then
+    local solution = solution:sub(1, #solution - 1)
+    print('solution: ' .. solution)
+    bot_loader.terminate() -- bot terminate in advance
+    if #self.pc_sequence == 0 then -- TODO should remove for dynamic
+      self.pc_sequence = lume.split(solution, '|') -- force update pc sequence if there is one
+    end
+  end
 
-  local path = bot_loader.findPath(field:convertBotStr(),
-    bot_piece_names[name], x, 20 - y, self.class.getHorizontalFlip(rot), name ~= self.name)
-  local seq = fn.map(lume.split(lume.split(path, '|')[1], ','), function(v )
-    return tonumber(v)
-  end)
-  if #self.bot_sequence == 0 then self.bot_sequence = fn.clone(seq) end
-  bot_loader.terminate() -- bot terminate in advance
+  -- Process first piece
+  if #self.pc_sequence > 0 then
+    print('pc_seq[1]: ' .. self.pc_sequence[1])
+    local sol = lume.split(self.pc_sequence[1], ',')
+    table.remove(self.pc_sequence, 1) -- pop first item
+
+    local name = pcfinder_piece_names[tonumber(sol[1]) + 1]
+    local x = tonumber(sol[2])
+    local y = tonumber(sol[3])
+    local rot = tonumber(sol[4])
+    print(name, x, y, rot)
+    x = x + pcfinder_offset[name][rot + 1][1]
+    y = y + pcfinder_offset[name][rot + 1][2]
+    print(x, y)
+
+    local path = bot_loader.findPath(
+      field:convertBotStr(),
+      bot_piece_names[name],
+      x,
+      20 - y,
+      self.class.getHorizontalFlip(rot),
+      name ~= self.name
+      )
+    print('path: ' .. path)
+    print('=====================================')
+    local seq = fn.map(lume.split(lume.split(path, '|')[1], ','), function(v )
+      return tonumber(v)
+    end)
+    if #self.bot_sequence == 0 then
+      self.bot_sequence = fn.clone(seq)
+    end
+  end
 end

@@ -1,42 +1,10 @@
 local pcfinder = require 'PCFinder'
 
--- local function convertfield(mx)
---   local res = ''
---   for i=1,#mx do
---     res = res..mx[i]
---   end
---   return res
--- end
---
 local function printf(f)
   for i = 1, #f, 10 do
     print(f:sub(i, i + 9))
   end
 end
---
--- local matrix = {
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   '__________',
---   'XX________',
---   'XXX__X_XX_',
---   'XXX__XXXXX',
--- }
--- local queue = 'SITLTSIZJOZLO'
 
 local finder = {}
 
@@ -53,11 +21,11 @@ if loaded == true then
     local requestChannel = love.thread.getChannel('pcrequest')
     local req = requestChannel:pop()
     if req then
-      local solution = pcfinder.action(req[1], req[2], req[3],
-        req[4], max_height, swap, searchtype, req[5], req[6])
       printf(req[1])
       print(req[2], req[3])
       print(req[4], req[5], req[6])
+      local solution = pcfinder.action(req[1], req[2], req[3],
+        req[4], max_height, swap, searchtype, req[5], req[6])
       local producer = love.thread.getChannel('solution')
       producer:push(solution)
     end

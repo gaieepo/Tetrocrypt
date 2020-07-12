@@ -1,6 +1,24 @@
 local bot = require 'GaiAI'
+local lume = require 'libraries/lume/lume'
 
 local loader = {}
+
+local function printf(f)
+  local rows = lume.split(f, '|')
+  print('>>>>>')
+  for _, v in ipairs(rows) do
+    if #v > 0 then
+      local row = ''
+      for i = #v, 1, -1 do
+        if v:sub(i, i) ~= ',' then
+          row = row .. (v:sub(i, i) == '0' and '_' or 'X')
+        end
+      end
+      print(row)
+    end
+  end
+  print('<<<<<')
+end
 
 local params = {
   -- TSPIN + B2B (baseline)
@@ -80,7 +98,6 @@ else
   end
 
   function loader.updateBot(queue, curr, hold, field, combo, b2b, incoming)
-    -- print(queue, curr, hold)
     bot.updatequeue(queue)
     bot.updatecurrent(curr)
     bot.updatehold(hold)
@@ -119,10 +136,6 @@ else
   end
 
   function loader.findPath(field, piece, x, y, r, hold)
-    -- print(field)
-    -- print(piece)
-    -- print(x, y, r)
-    -- print(hold)
     return bot.findPath(field, piece, x, y, r, hold)
   end
 
