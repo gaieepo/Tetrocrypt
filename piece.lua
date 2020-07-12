@@ -117,6 +117,13 @@ function Piece:update(dt)
 
   -- Passive --
   -- Bot logic
+  if field.field_updated and self.reset_done then
+    if self.state.bot_play then self:updateBot() end
+    if self.state.pcfinder_play then self:updatePCFinder() end
+    field.field_updated = false
+    self.reset_done = false
+  end
+
   if self.thinkFinished then
     local bot_move = bot_loader.getMove()
     local seq = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
@@ -442,13 +449,15 @@ function Piece:reset(name, use_hold)
   self.force_lock_delay = 0
 
   -- Update bot
-  if self.state.bot_play and not use_hold then
-    self:updateBot()
-  end
+  if not use_hold then self.reset_done = true end
 
-  if self.state.pcfinder_play and not use_hold then
-    self:updatePCFinder()
-  end
+  -- if self.state.bot_play and not use_hold then
+  --   self:updateBot()
+  -- end
+
+  -- if self.state.pcfinder_play and not use_hold then
+  --   self:updatePCFinder()
+  -- end
 
   if not use_hold then self.bot_sequence = {} end  -- make sure bot seq empty for every no-hold new piece
 end
@@ -546,9 +555,7 @@ function Piece:preprocessPCSolution(solution)
     local solution = solution:sub(1, #solution - 1)
     print('solution: ' .. solution)
     bot_loader.terminate() -- bot terminate in advance
-    if #self.pc_sequence == 0 then -- TODO should remove for dynamic
-      self.pc_sequence = lume.split(solution, '|') -- force update pc sequence if there is one
-    end
+    self.pc_sequence = lume.split(solution, '|') -- force update pc sequence if there is one
   end
 
   -- Process first piece

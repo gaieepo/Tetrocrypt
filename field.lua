@@ -5,6 +5,7 @@ function Field:initialize(state, sx, sy)
 
   -- Field Env
   self.trigger_update = false
+  self.field_updated = true -- initial true for bot update sequence
   self.clearing = false
   self.sx = self.state.startx + field_sx_offset
   self.sy = self.state.starty + field_sy_offset
@@ -66,19 +67,21 @@ function Field:update(dt)
   Field.super.update(self, dt) -- update timer
 
   local lines = self:checkLines()
-  if self.trigger_update then
-    stat:updateStatus(lines)
-    self.trigger_update = false
-  end
-
   if lines > 0 then
     self.clearing = true
     self:clearLines()
     self.timer:after(line_clear_delay * frame_time, function()
       self:fallStack()
       self.clearing = false
+      self.cleared = true -- bot piece to update bot and finder
     end)
   end
+  if self.trigger_update then
+    stat:updateStatus(lines)
+    self.trigger_update = false
+    self.field_updated = true
+  end
+
 
   if dig_mode and self.dig_accumulator then
     self.dig_accumulator = self.dig_accumulator + dt

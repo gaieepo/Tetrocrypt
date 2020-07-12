@@ -15,15 +15,15 @@ if loaded == true then
   local swap = false
   local searchtype = 0
 
-  -- pcfinder.setThread(2)
+  -- pcfinder.setThread(4) -- (Optional)
 
   while true do
     local requestChannel = love.thread.getChannel('pcrequest')
     local req = requestChannel:pop()
     if req then
-      printf(req[1])
-      print(req[2], req[3])
-      print(req[4], req[5], req[6])
+      -- printf(req[1])
+      -- print(req[2], req[3])
+      -- print(req[4], req[5], req[6])
       local solution = pcfinder.action(req[1], req[2], req[3],
         req[4], max_height, swap, searchtype, req[5], req[6])
       local producer = love.thread.getChannel('solution')
@@ -40,7 +40,7 @@ else
     local solution = consumer:pop()
     if solution then
       _solution = solution
-      -- print(solution)
+      print(solution)
       thinkFinished()
     end
   end

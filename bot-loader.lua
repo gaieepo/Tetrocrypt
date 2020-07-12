@@ -84,7 +84,7 @@ else
     local move = consumer:pop()
     if move then
       _move = move
-      -- print(move)
+      print(move)
       thinkFinished()
     end
   end
@@ -98,6 +98,7 @@ else
   end
 
   function loader.updateBot(queue, curr, hold, field, combo, b2b, incoming)
+    -- printf(field)
     bot.updatequeue(queue)
     bot.updatecurrent(curr)
     bot.updatehold(hold)
