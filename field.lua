@@ -18,7 +18,7 @@ function Field:initialize(state, sx, sy)
     self.board[r] = row
   end
 
-  -- Debug (TODO will collide with down piece -> false game loss state trigger)
+  -- Debug (TODO will collide with down piece -> false game loss state trigger / pc finder fail)
   if dig_mode then
     self.dig_accumulator = 0
   end
@@ -81,7 +81,6 @@ function Field:update(dt)
     self.trigger_update = false
     self.field_updated = true
   end
-
 
   if dig_mode and self.dig_accumulator then
     self.dig_accumulator = self.dig_accumulator + dt
@@ -178,7 +177,12 @@ function Field:fallStack()
         if done then break end -- prevent infinite while loop
 
         -- top-most row should be all empty
-        self.board[v_grids + x_grids] = table.zeros(h_grids)
+        if self.debug_c4w then
+          local g = function(v) return v * garbage_block_value end
+          self.board[v_grids + x_grids] = fn.mapi({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, g)
+        else
+          self.board[v_grids + x_grids] = table.zeros(h_grids)
+        end
       end
     end
   end
@@ -215,6 +219,7 @@ function Field:debugTSpin()
 end
 
 function Field:debugC4W()
+  self.debug_c4w = true
   local g = function(v) return v * garbage_block_value end
   self.board[1] = fn.mapi({1, 1, 1, 1, 1, 1, 0, 1, 1, 1}, g)
   for i = 2, v_grids + x_grids do

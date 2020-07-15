@@ -50,7 +50,7 @@ function Session:update(dt)
     end)
   end
 
-  if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end
+  if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end -- TODO exclude pause time
 
   -- Switch State
   if input:pressed('pause') then

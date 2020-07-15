@@ -49,6 +49,7 @@ function Piece:initialize(state, field, name, rot, x, y)
   self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
 
   self.reset_done = false
+  self.waiting_pcfinder = true
 
   -- Bot
   self.thinkFinished = false
@@ -124,14 +125,17 @@ function Piece:update(dt)
     self.reset_done = false
   end
 
-  if self.thinkFinished then
+  if self.thinkFinished and not self.waiting_pcfinder then
     local bot_move = bot_loader.getMove()
     local seq = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
-    if #self.bot_sequence == 0 and #self.pc_sequence == 0 then
+    -- use bot only when both sequences are empty (normal)
+    -- TODO when bot_sequence empty (dig mode)
+    -- if #self.bot_sequence == 0 and #self.pc_sequence == 0 then
+    if #self.bot_sequence == 0 then
       self.bot_sequence = fn.clone(seq)
-    end  -- use bot only when both sequences are empty
+    end
     self.thinkFinished = false
     self.use_bot_sequence = true -- start movement after both bot and pc done (TODO we assume pc faster than bot)
   end
@@ -139,6 +143,7 @@ function Piece:update(dt)
   if self.pcFinderThinkFinished then
     local solution = pc_finder.getSolution()
     self:preprocessPCSolution(solution)
+    self.waiting_pcfinder = false
     self.pcFinderThinkFinished = false
   end
 
@@ -449,7 +454,10 @@ function Piece:reset(name, use_hold)
   self.force_lock_delay = 0
 
   -- Update bot
-  if not use_hold then self.reset_done = true end
+  if not use_hold then
+    self.reset_done = true
+    self.waiting_pcfinder = true
+  end
 
   -- if self.state.bot_play and not use_hold then
   --   self:updateBot()
@@ -555,7 +563,10 @@ function Piece:preprocessPCSolution(solution)
     local solution = solution:sub(1, #solution - 1)
     print('solution: ' .. solution)
     bot_loader.terminate() -- bot terminate in advance
-    self.pc_sequence = lume.split(solution, '|') -- force update pc sequence if there is one
+    local seq = lume.split(solution, '|')
+    if #self.pc_sequence == 0 or #self.pc_sequence > #seq then
+      self.pc_sequence = seq -- force update pc sequence if there is one
+    end
   end
 
   -- Process first piece
@@ -577,15 +588,19 @@ function Piece:preprocessPCSolution(solution)
       field:convertBotStr(),
       bot_piece_names[name],
       x,
-      20 - y,
+      v_grids - y,
       self.class.getHorizontalFlip(rot),
       name ~= self.name
       )
     print('path: ' .. path)
     print('=====================================')
+    -- will not find path if in dig mode -> field changed compared to pc solution
+    ---- path not found
+    if path == '0' then return end
     local seq = fn.map(lume.split(lume.split(path, '|')[1], ','), function(v )
       return tonumber(v)
     end)
+    -- assert bot_sequence zero
     if #self.bot_sequence == 0 then
       self.bot_sequence = fn.clone(seq)
     end

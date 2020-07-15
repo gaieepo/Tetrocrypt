@@ -16,8 +16,8 @@ spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 bot_play = true
 num_bot_preview = 14
 think_duration = 0.2
-bot_move_delay = 1 -- (frame)
-pcfinder_play = false
+bot_move_delay = 5 -- (frame)
+pcfinder_play = true
 num_pcfinder_preview = 14
 pcfinder_think_duration = 0.1
 
@@ -69,7 +69,7 @@ field_sx_offset = 150 -- (pixel)
 field_sy_offset = 550 -- (pixel)
 garbage_block_value = 10
 empty_block_value = 0
-dig_mode = true
+dig_mode = false
 dig_delay = 1
 
 -- Stat

@@ -86,6 +86,11 @@ function Stat:updateStatus(lines)
     self.current_attack = garbage_table[self.status] + self:getComboAttack() + (self.b2b and 1 or 0)
     self.total_attack = self.total_attack + self.current_attack
   end
+
+  -- (Temporary) 40L Sprint
+  -- if self.lines >= 40 then
+  --   print(self.state.session_duration)
+  -- end
 end
 
 function Stat:getComboAttack()
