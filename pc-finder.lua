@@ -40,7 +40,7 @@ else
     local solution = consumer:pop()
     if solution then
       _solution = solution
-      print(solution)
+      -- print(solution)
       thinkFinished()
     end
   end

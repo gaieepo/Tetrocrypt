@@ -111,7 +111,7 @@ else
     local move = consumer:pop()
     if move then
       _move = move
-      print(move)
+      -- print(move)
       thinkFinished()
     end
   end
