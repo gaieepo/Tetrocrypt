@@ -147,6 +147,15 @@ function Field:getBlock(x, y)
   end
 end
 
+function Field:isEmpty()
+  for i, row in ipairs(self.board) do
+    if not table.empty(row) then
+      return false
+    end
+  end
+  return true
+end
+
 function Field:checkLines()
   local lines = 0
   for r = 1, v_grids + x_grids do

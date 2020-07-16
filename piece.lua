@@ -150,11 +150,14 @@ function Piece:update(dt)
   end
 
   if self.use_bot_sequence and #self.bot_sequence > 0 and not self.waiting_bot then
-    if love.timer.getTime() - self.bot_last_move > self.bot_move_delay then
-      local valid = self:processBotSequence()
-      if not valid then self.use_bot_sequence = false end
+    local elapsed = love.timer.getTime() - self.bot_last_move
+    if elapsed > frame_time then
+      if self:safeBotMove(self.bot_sequence[1]) or elapsed > self.bot_move_delay then
+        local valid = self:processBotSequence()
+        if not valid then self.use_bot_sequence = false end
 
-      self.bot_last_move = love.timer.getTime()
+        self.bot_last_move = love.timer.getTime()
+      end
     end
   end
 
@@ -503,6 +506,14 @@ function Piece:setAllSpin()
 end
 
 -- Bot logic
+function Piece:safeBotMove(m)
+  local _safeMoves = {MOV_NULL, MOV_LL, MOV_RR, MOV_DD, MOV_HOLD}
+  for _, v in ipairs(_safeMoves) do
+    if m == v then return true end
+  end
+  return false
+end
+
 function Piece:processBotSequence()
   -- MOV_NULL  = 0
   -- MOV_L     = 1

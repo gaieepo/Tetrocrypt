@@ -12,6 +12,9 @@ line_clear_delay = 1 -- (frame)
 num_preview = 6
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
+-- Garbage --
+pc_garbage = 8
+
 -- Bot --
 bot_play = true
 num_bot_preview = 14

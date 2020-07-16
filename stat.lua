@@ -83,7 +83,8 @@ function Stat:updateStatus(lines)
     if (lines == 4 or self.tspin) and self.prev_back then self.b2b = true else self.b2b = false end
     if lines == 4 or self.tspin then self.prev_back = true else self.prev_back = false end
 
-    self.current_attack = garbage_table[self.status] + self:getComboAttack() + (self.b2b and 1 or 0)
+    local base_attack = field:isEmpty() and pc_garbage or garbage_table[self.status]
+    self.current_attack = base_attack + self:getComboAttack() + (self.b2b and 1 or 0)
     self.total_attack = self.total_attack + self.current_attack
   end
 
