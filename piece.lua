@@ -20,11 +20,18 @@ end
 
 ------------------------------------------
 
-function Piece:initialize(state, field, name, rot, x, y)
-  Piece.super.initialize(self, state)
+function Piece:initialize(state, is_human, hold, preview, stat, field, name, rot, x, y)
+  Piece.super.initialize(self)
+
+  -- Entity reference
+  self.state = state
+  self.is_human = is_human
+  self.hold = hold
+  self.preview = preview
+  self.stat = stat
+  self.field = field
 
   -- Piece Env
-  self.field = field
   self.name = name -- TODO copy constructor, index, name
   self.rot = rot or default_rot -- rot 0, 1, 2, 3
   self.x = x or self:getSpawnX()
@@ -65,22 +72,21 @@ function Piece:initialize(state, field, name, rot, x, y)
   self:reset(self.name, false)
 
   -- Passive
-  -- Auto Drop (disable when bot)
-  if not self.state.bot_play then
-    self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
-      if not self:collide(self.x, self.y - 1, self.rot, self.field) then
-        self.y = self.y - 1
-        -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
-      end
-    end)
-  end
+  -- Auto Drop
+  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
+    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+      self.y = self.y - 1
+      -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
+    end
+  end)
 end
 
 function Piece:update(dt)
   Piece.super.update(self, dt) -- update timer
 
   -- Input handler
-  if not self.state.bot_play then
+  -- if self.state.bot_play ~= self.is_human then
+  if self.is_human then
     if input:pressed('harddrop') then self:harddrop() end
     -- if input:pressed('softdrop') then self:onSoftdropStart() end
     -- if input:released('softdrop') then self:onSoftdropEnd() end
@@ -107,6 +113,7 @@ function Piece:update(dt)
       self.last_right_shift = self.right_shift
       self.right_shift = '0'
     end
+    -- Encoded
     self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
     if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then self:moveLeft() end
     if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then self:moveRight() end
@@ -114,15 +121,15 @@ function Piece:update(dt)
     if input:pressed('piece_rotate_right') then self:rotateRight() end
     if input:pressed('piece_rotate_left') then self:rotateLeft() end
     if input:pressed('piece_rotate_180') then self:rotate180() end
-    if input:pressed('hold') then self:hold() end
+    if input:pressed('hold') then self:holdPiece() end
   end
 
   -- Passive --
   -- Bot logic
-  if field.field_updated and self.reset_done then
-    if self.state.bot_play then self:updateBot() end
-    if self.state.pcfinder_play then self:updatePCFinder() end
-    field.field_updated = false
+  if self.field.field_updated and self.reset_done then
+    if self.state.bot_play and not self.is_human then self:updateBot() end
+    if self.state.pcfinder_play and not self.is_human then self:updatePCFinder() end
+    self.field.field_updated = false
     self.reset_done = false
   end
 
@@ -152,7 +159,7 @@ function Piece:update(dt)
   if self.use_bot_sequence and #self.bot_sequence > 0 and not self.waiting_bot then
     local elapsed = love.timer.getTime() - self.bot_last_move
     if elapsed > frame_time then
-      if self:safeBotMove(self.bot_sequence[1]) or elapsed > self.bot_move_delay then
+      if self:safeBotMove(self.bot_sequence) or elapsed > self.bot_move_delay then
         local valid = self:processBotSequence()
         if not valid then self.use_bot_sequence = false end
 
@@ -165,7 +172,7 @@ function Piece:update(dt)
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
       -- Pre-lock process
-      stat.pieces = stat.pieces + 1
+      self.stat.pieces = self.stat.pieces + 1
 
       if self.name == 'T' and self.last_valid_move == 'rotation' then
         if spin_mode == 'tspinonly' then
@@ -174,14 +181,14 @@ function Piece:update(dt)
           self:setAllSpin()
         end
       else
-        stat.tspin = false
-        stat.tspinmini = false
+        self.stat.tspin = false
+        self.stat.tspinmini = false
       end
 
-      field:addPiece(self.name, self.rot, self.x, self.y)
+      self.field:addPiece(self.name, self.rot, self.x, self.y)
 
       -- Respawn new piece
-      self:reset(piece_names[preview:next()], false)
+      self:reset(piece_names[self.preview:next()], false)
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
@@ -209,8 +216,8 @@ function Piece:draw()
       love.graphics.setColor(block_colors[self.name])
       love.graphics.setLineWidth(3)
       love.graphics.rectangle('line',
-                              self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (y2 - y) * grid_size,
-                              grid_size, grid_size)
+                              self.field.fstartx + (self.x + x - 1) * grid_size + 1, self.field.fstarty - (y2 - y) * grid_size + 1,
+                              grid_size - 2, grid_size - 2)
     end
     love.graphics.setLineWidth(1) -- reset line width TODO better way to resolve this
   end
@@ -221,11 +228,11 @@ function Piece:draw()
     local y = piece_ys[self.name][self.rot + 1][i]
     love.graphics.setColor(block_colors[self.name])
     love.graphics.rectangle('fill',
-                            self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (self.y - y) * grid_size,
+                            self.field.fstartx + (self.x + x - 1) * grid_size, self.field.fstarty - (self.y - y) * grid_size,
                             grid_size, grid_size)
     love.graphics.setColor(grid_color)
     love.graphics.rectangle('line',
-                            self.field.sx + (self.x + x - 1) * grid_size, self.field.sy - (self.y - y) * grid_size,
+                            self.field.fstartx + (self.x + x - 1) * grid_size, self.field.fstarty - (self.y - y) * grid_size,
                             grid_size, grid_size)
   end
 end
@@ -275,30 +282,30 @@ function Piece:softdrop()
 end
 
 -- not used
-function Piece:onSoftdropStart()
-  self.timer:cancel('autodrop')
-  self.softdropping = true
-
-  self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
-    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
-      self.y = self.y - 1
-    end
-  end)
-end
+-- function Piece:onSoftdropStart()
+--   self.timer:cancel('autodrop')
+--   self.softdropping = true
+--
+--   self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
+--     if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+--       self.y = self.y - 1
+--     end
+--   end)
+-- end
 
 -- not used
-function Piece:onSoftdropEnd()
-  self.timer:cancel('softdrop')
-  self.softdropping = false
-
-  if not self.state.bot_play then
-    self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
-      if not self:collide(self.x, self.y - 1, self.rot, self.field) then
-        self.y = self.y - 1
-      end
-    end)
-  end
-end
+-- function Piece:onSoftdropEnd()
+--   self.timer:cancel('softdrop')
+--   self.softdropping = false
+--
+--   if not self.state.bot_play then
+--     self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
+--       if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+--         self.y = self.y - 1
+--       end
+--     end)
+--   end
+-- end
 
 function Piece:moveLeft()
   if not self:collide(self.x - 1, nil, nil, nil) then
@@ -395,15 +402,15 @@ function Piece:rotate180()
   self.last_valid_move = 'rotation'
 end
 
-function Piece:hold()
+function Piece:holdPiece()
   if hold_allowed and not self.hold_used then
     local _to_hold = self.name
-    if hold.name ~= nil then
-      self:reset(hold.name, true)
+    if self.hold.name ~= nil then
+      self:reset(self.hold.name, true)
     else
-      self:reset(piece_names[preview:next()], true)
+      self:reset(piece_names[self.preview:next()], true)
     end
-    hold.name = _to_hold
+    self.hold.name = _to_hold
 
     self.hold_used = true
   end
@@ -412,12 +419,12 @@ end
 function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
-    preview:peakBotString(num_bot_preview),
+    self.preview:peakBotString(num_bot_preview),
     bot_piece_names[self.name],
-    bot_piece_names[hold:getBotName()],
-    field:convertBotStr(),
-    math.max(stat.combo_counter, 0),
-    stat.b2b and 1 or 0,
+    bot_piece_names[self.hold:getBotName()],
+    self.field:convertBotStr(),
+    math.max(self.stat.combo_counter, 0),
+    self.stat.b2b and 1 or 0,
     0
     )
   bot_loader.think(function()
@@ -434,12 +441,12 @@ function Piece:updatePCFinder()
     function()
       self.pcFinderThinkFinished = true
     end,
-    field:convertPCFinderStr(),
-    self.name .. preview:peakString(num_pcfinder_preview),
-    hold:getPCFinderName(),
-    field:getPCHeight(),
-    math.max(stat.combo_counter, 0),
-    stat.b2b
+    self.field:convertPCFinderStr(),
+    self.name .. self.preview:peakString(num_pcfinder_preview),
+    self.hold:getPCFinderName(),
+    self.field:getPCHeight(),
+    math.max(self.stat.combo_counter, 0),
+    self.stat.b2b
     )
   self.timer:after(pcfinder_think_duration, function()
     pc_finder.terminate()
@@ -479,9 +486,9 @@ end
 function Piece:setTSpin()
   if self:collide(nil, nil, self.class.static.getRotateLeft(self.rot), nil)
     and self:collide(nil, nil, self.class.static.getRotateRight(self.rot), nil) then
-    stat.tspinmini = true
+    self.stat.tspinmini = true
   else
-    stat.tspinmini = false
+    self.stat.tspinmini = false
   end
 
   local tx = {0, 2, 0, 2}
@@ -495,9 +502,9 @@ function Piece:setTSpin()
   end
 
   if count >= 3 then
-    stat.tspin = true
+    self.stat.tspin = true
   else
-    stat.tspin = false
+    self.stat.tspin = false
   end
 end
 
@@ -508,9 +515,12 @@ end
 -- Bot logic
 function Piece:safeBotMove(m)
   local _safeMoves = {MOV_NULL, MOV_LL, MOV_RR, MOV_DD, MOV_HOLD}
-  for _, v in ipairs(_safeMoves) do
-    if m == v then return true end
-  end
+  -- LL/RR/DD
+  if fn.contains(_safeMoves, m[1]) then return true end
+  -- two consecutive L or R or D
+  if m[1] == m[2] then return true end
+  -- L and R
+  if (m[1] == MOV_L and m[2] == MOV_R) or (m[1] == MOV_R and m[2] == MOV_L) then return true end
   return false
 end
 
@@ -532,7 +542,7 @@ function Piece:processBotSequence()
   end
 
   if self.bot_sequence[1] == MOV_HOLD then
-    self:hold()
+    self:holdPiece()
     table.remove(self.bot_sequence, 1)
   elseif self.bot_sequence[1] == MOV_L then
     self:moveLeft()
@@ -591,11 +601,12 @@ function Piece:preprocessPCSolution(solution)
     local x = tonumber(sol[2])
     local y = tonumber(sol[3])
     local rot = tonumber(sol[4])
+    -- bot coord
     x = x + pcfinder_offset[name][rot + 1][1]
     y = y + pcfinder_offset[name][rot + 1][2]
 
     local path = bot_loader.findPath(
-      field:convertBotStr(),
+      self.field:convertBotStr(),
       bot_piece_names[name],
       x,
       v_grids - y,

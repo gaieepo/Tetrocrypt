@@ -27,7 +27,9 @@ local combo_table = {
 local clear_table = {'single', 'double', 'triple', 'tetris'}
 
 function Stat:initialize(state)
+  -- State reference
   self.state = state
+
   self.pieces = 0
   self.pps = 0
   self.lines = 0
@@ -68,7 +70,7 @@ function Stat:draw()
   love.graphics.print('Status:       ' .. self.status, stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
 end
 
-function Stat:updateStatus(lines)
+function Stat:updateStatus(lines, isEmpty)
   if lines == 0 then
     self.combo_counter = -1 -- reset to -1 since first combo does not send garbage
   else
@@ -83,7 +85,7 @@ function Stat:updateStatus(lines)
     if (lines == 4 or self.tspin) and self.prev_back then self.b2b = true else self.b2b = false end
     if lines == 4 or self.tspin then self.prev_back = true else self.prev_back = false end
 
-    local base_attack = field:isEmpty() and pc_garbage or garbage_table[self.status]
+    local base_attack = isEmpty and pc_garbage or garbage_table[self.status]
     self.current_attack = base_attack + self:getComboAttack() + (self.b2b and 1 or 0)
     self.total_attack = self.total_attack + self.current_attack
   end
@@ -102,4 +104,7 @@ function Stat:getComboAttack()
   else
     return combo_table[#combo_table]
   end
+end
+
+function Stat:destroy()
 end

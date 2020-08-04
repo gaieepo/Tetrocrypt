@@ -1,15 +1,34 @@
-Field = class('Field', Entity)
+local Each = require 'modules/Each'
 
-function Field:initialize(state, sx, sy)
-  Field.super.initialize(self, state)
+Field = class('Field', Entity):include(Each)
+
+function Field.static:sendGarbageToOthers(id, garbage)
+  for instance, _ in pairs(self._instances) do
+    if instance.id ~= id then
+      fn.push(instance.incoming_garbage, garbage)
+    end
+  end
+end
+
+------------------------------------
+
+function Field:initialize(stat, fsx, fsy)
+  Field.super.initialize(self)
+
+  -- Entity reference
+  self.stat = stat
 
   -- Field Env
   self.trigger_update = false
   self.field_updated = true -- initial true for bot update sequence
   self.clearing = false
-  self.sx = self.state.startx + field_sx_offset
-  self.sy = self.state.starty + field_sy_offset
+  self.incoming = 0
+  self.fstartx = fsx + field_sx_offset
+  self.fstarty = fsy + field_sy_offset
   self.board = {}
+  self.incoming_garbage = {}
+
+  -- Initialize board
   for r = 1, v_grids + x_grids do
     local row = {}
     for c = 1, h_grids do
@@ -18,10 +37,12 @@ function Field:initialize(state, sx, sy)
     self.board[r] = row
   end
 
-  -- Debug (TODO will collide with down piece -> false game loss state trigger / pc finder fail)
+  -- Debug (TODO logic not smooth)
   if dig_mode then
     self.dig_accumulator = 0
   end
+
+  self.class:add(self)
 end
 
 function Field:convertBotStr()
@@ -77,7 +98,11 @@ function Field:update(dt)
     end)
   end
   if self.trigger_update then
-    stat:updateStatus(lines)
+    -- self:calculateAttack(lines)
+    self.stat:updateStatus(lines, self:isEmpty())
+    -- Send garbage to the rest after update status
+    Field:sendGarbageToOthers(self.id, self.stat.current_attack)
+    self.stat.current_attack = 0 -- (TODO very dirty way to reset current attack)
     self.trigger_update = false
     self.field_updated = true
   end
@@ -100,11 +125,11 @@ function Field:draw()
           love.graphics.setColor(fn.mapi(block_colors[piece_names[self.board[i][j]]], function(v) return v * 0.8 end))
         end
         love.graphics.rectangle('fill',
-                                self.sx + (j - 1) * grid_size, self.sy - i * grid_size,
+                                self.fstartx + (j - 1) * grid_size, self.fstarty - i * grid_size,
                                 grid_size, grid_size)
         love.graphics.setColor(grid_color)
         love.graphics.rectangle('line',
-                                self.sx + (j - 1) * grid_size, self.sy - i * grid_size,
+                                self.fstartx + (j - 1) * grid_size, self.fstarty - i * grid_size,
                                 grid_size, grid_size)
       end
     end
@@ -112,11 +137,12 @@ function Field:draw()
 
   -- Hidden break line
   love.graphics.setColor(1, 0, 0)
-  love.graphics.line(self.sx, self.sy - v_grids * grid_size,
-                     self.sx + h_grids * grid_size, self.sy - v_grids * grid_size)
+  love.graphics.line(self.fstartx, self.fstarty - v_grids * grid_size,
+                     self.fstartx + h_grids * grid_size, self.fstarty - v_grids * grid_size)
 end
 
 function Field:destroy()
+  self.class:remove(self)
   Field.super.destroy(self, dt)
 end
 
@@ -127,16 +153,19 @@ function Field:addPiece(name, rot, x, y)
     self.board[y2][x2] = piece_ids[name]
   end
 
-  -- Trigger stat update
+  -- Trigger stat update (TODO stat should be done before garbage spawning, to counter incoming attack)
   self.trigger_update = true
 
   -- Dig mode logic
   if dig_mode and self.dig_accumulator then
     if self.dig_accumulator > dig_delay then
-      self:singleGarbage()
+      fn.push(self.incoming_garbage, 1)
       self.dig_accumulator = 0
     end
   end
+
+  -- Garbage generation
+  self:spawnGarbage()
 end
 
 function Field:getBlock(x, y)
@@ -197,24 +226,21 @@ function Field:fallStack()
   end
 end
 
-function Field:singleGarbage(t)
+function Field:spawnGarbage()
   local g = function(v) return v * garbage_block_value end
-  for r = v_grids + x_grids, 2, -1 do
-    self.board[r] = table.copy(self.board[r - 1])
-  end
-  self.board[1] = fn.mapi(table.onezero(h_grids), g)
-end
-
--- Debug --
-function Field:debugGarbage(height)
-  local height = height or 5
-  for r = 1, height do
-    for c = 1, h_grids do
-      self.board[r][c] = love.math.random() < 0.3 and garbage_block_value or empty_block_value
+  while not table.empty(self.incoming_garbage) do
+    lines = fn.pop(self.incoming_garbage)
+    for r = v_grids + x_grids, 2, -1 do
+      self.board[r] = table.copy(self.board[r - lines])
+    end
+    local _single_garbage = fn.mapi(table.onezero(h_grids), g)
+    for r = 1, lines do
+      self.board[r] = table.copy(_single_garbage)
     end
   end
 end
 
+-- Debug --
 function Field:debugTSpin()
   local g = function(v) return v * garbage_block_value end
   self.board[8] = fn.mapi({0,0,0,0,0,1,0,0,0,0}, g)

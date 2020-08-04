@@ -1,15 +1,14 @@
 Preview = class('Preview')
 
-function Preview:initialize(sx, sy)
+function Preview:initialize(psx, psy)
   self.queue = {}
   self.generate_count = 0
 
-  self.sx = sx + preview_sx_offset
-  self.sy = sy + preview_sy_offset
+  self.pstartx = psx + preview_sx_offset
+  self.pstarty = psy + preview_sy_offset
 
   -- Initialize queue
-  -- 4 bags to ensure
-  for i = 1, 4 do
+  for i = 1, num_bags do
     self.queue = fn.append(self.queue, self:nextBag())
   end
 end
@@ -25,18 +24,18 @@ function Preview:draw()
       local y = piece_ys[piece_names[pid]][1][i]
       love.graphics.setColor(block_colors[piece_names[pid]])
       love.graphics.rectangle('fill',
-                              self.sx + x * grid_size, self.sy + (index - 1) * y_separation + y * grid_size,
+                              self.pstartx + x * grid_size, self.pstarty + (index - 1) * y_separation + y * grid_size,
                               grid_size, grid_size)
       love.graphics.setColor(grid_color)
       love.graphics.rectangle('line',
-                              self.sx + x * grid_size, self.sy + (index - 1) * y_separation + y * grid_size,
+                              self.pstartx + x * grid_size, self.pstarty + (index - 1) * y_separation + y * grid_size,
                               grid_size, grid_size)
     end
   end
 end
 
 function Preview:nextBag()
-  local bag = table.shuffle({1, 2, 3, 4, 5, 6, 7})
+  local bag = table.shuffle(base_bag)
   return bag
 end
 
@@ -44,7 +43,7 @@ function Preview:next()
   local _next = fn.shift(self.queue, 1)
   self.generate_count = self.generate_count + 1
 
-  if #self.queue <= 21 then
+  if #self.queue <= (num_bags - 1) * #base_bag then
     self.queue = fn.append(self.queue, self:nextBag())
   end
   return _next
@@ -75,4 +74,7 @@ function Preview:peakString(n)
     _nextn = _nextn .. piece_names[self.queue[i]]
   end
   return _nextn
+end
+
+function Preview:destroy()
 end

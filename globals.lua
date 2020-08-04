@@ -9,7 +9,9 @@ num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 1 -- (frame)
-num_preview = 6
+game_mode = 'match' -- analysis / match
+human_index = 1
+num_players = 2
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
 -- Garbage --
@@ -18,7 +20,7 @@ pc_garbage = 8
 -- Bot --
 bot_play = true
 num_bot_preview = 14
-think_duration = 0.2
+think_duration = 0.1
 bot_move_delay = 1 -- (frame)
 pcfinder_play = true
 num_pcfinder_preview = 14
@@ -35,7 +37,7 @@ session_background_color = { 10/255,  10/255,  10/255}
 pause_background_color   = {  0/255,   0/255,   0/255}
 grid_color               = {100/255, 100/255, 100/255}
 block_colors = {
-  ['E'] = { 50/255,  50/255,   50/255},
+  ['E'] = { 50/255,  50/255,  50/255},
   ['B'] = {200/255, 200/255, 200/255},
   ['S'] = {  0/255, 240/255,   0/255},
   ['Z'] = {240/255,   0/255,   0/255},
@@ -45,10 +47,21 @@ block_colors = {
   ['O'] = {240/255, 240/255,   0/255},
   ['I'] = {  0/255, 240/255, 240/255},
 }
+block_alpha_colors = {
+  ['E'] = { 50/255,  50/255,  50/255, 0.4},
+  ['B'] = {200/255, 200/255, 200/255, 0.4},
+  ['S'] = {  0/255, 240/255,   0/255, 0.4},
+  ['Z'] = {240/255,   0/255,   0/255, 0.4},
+  ['L'] = {240/255, 160/255,   0/255, 0.4},
+  ['J'] = {  0/255,   0/255, 240/255, 0.4},
+  ['T'] = {160/255,   0/255, 240/255, 0.4},
+  ['O'] = {240/255, 240/255,   0/255, 0.4},
+  ['I'] = {  0/255, 240/255, 240/255, 0.4},
+}
 
 -- Position --
-startx = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
-starty = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+session_startx = 0 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+session_starty = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
 
 -- Grid
 grid_size = 23 -- (pixel)
@@ -63,6 +76,8 @@ hold_sx_offset = 50 -- (pixel)
 hold_sy_offset = 20 -- (pixel)
 
 -- Preview
+num_bags = 4
+base_bag = {1, 2, 3, 4, 5, 6, 7} -- {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
 preview_sx_offset = 400 -- (pixel)
 preview_sy_offset = 0 -- (pixel)
 y_separation = 70

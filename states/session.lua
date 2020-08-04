@@ -9,30 +9,30 @@ function Session:enteredState()
   self.session_duration = 0 -- (second)
   self.session_state = GAME_COUNTDOWN
   self.counting_down_text = nil
-  self.startx, self.starty = startx, starty
+  self.sstartx, self.sstarty = session_startx, session_starty
 
   -- Session State Input Handler
   input:bind('escape', 'pause')
   input:bind('backspace', 'restart')
 
-  if not self.bot_play then
-    input:bind('w', 'harddrop')
-    input:bind('a', 'move_left')
-    input:bind('s', 'softdrop')
-    input:bind('d', 'move_right')
-    input:bind('k', 'piece_rotate_right')
-    input:bind('m', 'piece_rotate_left')
-    input:bind('l', 'piece_rotate_180')
-    input:bind('q', 'hold')
+  -- if not self.bot_play then
+  -- Always bind, just react differently
+  input:bind('w', 'harddrop')
+  input:bind('a', 'move_left')
+  input:bind('s', 'softdrop')
+  input:bind('d', 'move_right')
+  input:bind('l', 'piece_rotate_right')
+  input:bind(',', 'piece_rotate_left')
+  input:bind(';', 'piece_rotate_180')
+  input:bind('q', 'hold')
+
+  -- Game Layouts
+  if game_mode == 'match' then
+    l1 = Layout:new(self, 1, self.sstartx, self.sstarty)
+    l2 = Layout:new(self, 2, self.sstartx + 600, self.sstarty)
+  elseif game_mode == 'analysis' then
+    layout = Layout:new(self, 2, self.sstartx, self.sstarty)
   end
-
-  -- Game Entities
-  hold = Hold:new(self.startx, self.starty)
-  preview = Preview:new(self.startx, self.starty)
-  stat = Stat:new(self)
-
-  field = Field:new(self)
-  piece = Piece:new(self, field, piece_names[preview:next()])
 end
 
 function Session:update(dt)
@@ -54,7 +54,7 @@ function Session:update(dt)
 
   -- Switch State
   if input:pressed('pause') then
-    -- TODO
+    -- TODO temporarily use in-state pause. Works quite well actually
     -- self:pushState('Pause')
     self.pause = not self.pause
   end
@@ -62,15 +62,7 @@ function Session:update(dt)
   if self.session_state == GAME_LOSS then self:finish() end
 
   -- Entity Update
-  if not self.pause then
-    if self.session_state == GAME_NORMAL then
-      field:update(dt)
-
-      if not field.clearing then
-        piece:update(dt)
-      end
-    end
-  end
+  Layout:updateAll(dt)
 end
 
 function Session:draw()
@@ -81,12 +73,8 @@ function Session:draw()
   love.graphics.print('FPS: ' .. love.timer.getFPS(), 0, 0)
   love.graphics.print('Time: ' .. human_time(self.session_duration), 0, gh - default_font_size)
 
-  -- Entity Draw
-  hold:draw()
-  preview:draw()
-  field:draw()
-  piece:draw()
-  stat:draw()
+  -- Layout Draw
+  Layout:drawAll()
 
   -- Dead
   if self.session_state == GAME_LOSS then
@@ -95,7 +83,7 @@ function Session:draw()
     love.graphics.setFont(temp_font)
     local gg_text = 'Game Over'
     love.graphics.print(gg_text,
-                        field.sx + h_grids * grid_size / 2, field.sy - v_grids * grid_size / 2,
+                        gw / 2, gh / 2,
                         0, 1, 1,
                         temp_font:getWidth(gg_text) / 2, temp_font:getHeight(gg_text) / 2)
     love.graphics.setFont(global_font)
@@ -107,7 +95,7 @@ function Session:draw()
     love.graphics.setColor(1, 1, 0)
     love.graphics.setFont(temp_font)
     love.graphics.print(self.counting_down_text,
-                        field.sx + h_grids * grid_size / 2, field.sy - v_grids * grid_size / 2,
+                        gw / 2, gh / 2,
                         0, 1, 1,
                         temp_font:getWidth(self.counting_down_text) / 2, temp_font:getHeight(self.counting_down_text) / 2)
     love.graphics.setFont(global_font)
@@ -115,12 +103,16 @@ function Session:draw()
 end
 
 function Session:finish()
-  -- Finishing content
+  -- Bot terminate
   bot_loader.terminate()
   pc_finder.terminate()
 end
 
 function Session:exitedState()
+  -- Remove all layouts
+  Layout:destroyAll()
+
+  -- Bot terminate
   bot_loader.terminate()
   pc_finder.terminate()
 end

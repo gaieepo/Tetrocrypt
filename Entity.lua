@@ -16,11 +16,10 @@ end
 
 ------------------------------------
 
-function Entity:initialize(state)
+function Entity:initialize()
   -- local opts = opts or {}
   -- if opts then for k, v in pairs(opts) do self[k] = v end end
 
-  self.state = state
   self.timer = Timer:new()
   self.id = UUID()
 end

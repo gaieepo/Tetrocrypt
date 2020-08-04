@@ -21,6 +21,7 @@ require 'piece'
 require 'preview'
 require 'stat'
 require 'hold'
+require 'layout'
 
 function love.load()
   -- Main Env
@@ -112,7 +113,7 @@ end
 function love.run()
   -- Random Seed (optional)
   -- math.randomseed(default_seed or os.time())
-  if love.math then love.math.setRandomSeed(default_seed or os.time()) end
+  -- if love.math then love.math.setRandomSeed(default_seed or os.time()) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 

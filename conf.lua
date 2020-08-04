@@ -1,15 +1,15 @@
 -- Window constant
-gw = 1000
+gw = 1200
 gh = 600
-sx = 1
-sy = 1
+scalex = 1
+scaley = 1
 
 function love.conf(t)
   t.identity = nil  -- the name of the save directory (string)
   t.version = '11.3' -- Love2D version this game was made for (string)
   t.console = false -- attach a console (boolean, Windows only)
 
-  t.window.title = 'mino game'
+  t.window.title = 'Tetrocrypt'
   t.window.icon = nil
   t.window.width = gw
   t.window.height = gh
