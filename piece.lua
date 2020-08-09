@@ -20,16 +20,13 @@ end
 
 ------------------------------------------
 
-function Piece:initialize(state, is_human, hold, preview, stat, field, name, rot, x, y)
+function Piece:initialize(state, layout, name, rot, x, y)
   Piece.super.initialize(self)
 
   -- Entity reference
   self.state = state
-  self.is_human = is_human
-  self.hold = hold
-  self.preview = preview
-  self.stat = stat
-  self.field = field
+  self.layout = layout
+  self.is_human = layout.is_human
 
   -- Piece Env
   self.name = name -- TODO copy constructor, index, name
@@ -59,6 +56,12 @@ function Piece:initialize(state, is_human, hold, preview, stat, field, name, rot
   self.waiting_pcfinder = pcfinder_play
   self.waiting_bot = bot_play
 
+  -- Stat register
+  self.piece_count = 0
+  self.do_tspinmini = false
+  self.do_tspin = false
+  self.is_b2b = false
+
   -- Bot
   self.thinkFinished = false
   self.use_bot_sequence = false
@@ -74,7 +77,7 @@ function Piece:initialize(state, is_human, hold, preview, stat, field, name, rot
   -- Passive
   -- Auto Drop
   self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
-    if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+    if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
       self.y = self.y - 1
       -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
     end
@@ -85,8 +88,11 @@ function Piece:update(dt)
   Piece.super.update(self, dt) -- update timer
 
   -- Input handler
-  -- if self.state.bot_play ~= self.is_human then
-  if self.is_human then
+  if input:pressed('debug') then self:adHocDebug() end
+
+  -- A: is match, B: bot play, C: is human
+  -- (C)(A + B') or B'C + AC
+  if self.is_human and (game_mode == 'match' or not self.state.bot_play) then
     if input:pressed('harddrop') then self:harddrop() end
     -- if input:pressed('softdrop') then self:onSoftdropStart() end
     -- if input:released('softdrop') then self:onSoftdropEnd() end
@@ -126,10 +132,15 @@ function Piece:update(dt)
 
   -- Passive --
   -- Bot logic
-  if self.field.field_updated and self.reset_done then
-    if self.state.bot_play and not self.is_human then self:updateBot() end
-    if self.state.pcfinder_play and not self.is_human then self:updatePCFinder() end
-    self.field.field_updated = false
+  if self.layout.field.field_updated and self.reset_done then
+    -- (B)(A' + C')
+    if self.state.bot_play and (not self.is_human or game_mode == 'analysis') then
+      self:updateBot()
+    end
+    if self.state.pcfinder_play and (not self.is_human or game_mode == 'analysis') then
+      self:updatePCFinder()
+    end
+    self.layout.field.field_updated = false
     self.reset_done = false
   end
 
@@ -171,8 +182,8 @@ function Piece:update(dt)
   -- Lock & Force Lock
   if self:collide(nil, self.y - 1, nil, nil) then  -- collide bottom
     if self.lock_delay > self.lock_delay_maximum or self.force_lock_delay > self.force_lock_delay_maximum then
-      -- Pre-lock process
-      self.stat.pieces = self.stat.pieces + 1
+      -- Pre-lock process (update stat)
+      self.piece_count = self.piece_count + 1
 
       if self.name == 'T' and self.last_valid_move == 'rotation' then
         if spin_mode == 'tspinonly' then
@@ -181,14 +192,14 @@ function Piece:update(dt)
           self:setAllSpin()
         end
       else
-        self.stat.tspin = false
-        self.stat.tspinmini = false
+        self.do_tspin = false
+        self.do_tspinmini = false
       end
 
-      self.field:addPiece(self.name, self.rot, self.x, self.y)
+      self.layout.field:addPiece(self.name, self.rot, self.x, self.y)
 
       -- Respawn new piece
-      self:reset(piece_names[self.preview:next()], false)
+      self:reset(piece_names[self.layout.preview:next()], false)
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
@@ -216,7 +227,7 @@ function Piece:draw()
       love.graphics.setColor(block_colors[self.name])
       love.graphics.setLineWidth(3)
       love.graphics.rectangle('line',
-                              self.field.fstartx + (self.x + x - 1) * grid_size + 1, self.field.fstarty - (y2 - y) * grid_size + 1,
+                              self.layout.field.fstartx + (self.x + x - 1) * grid_size + 1, self.layout.field.fstarty - (y2 - y) * grid_size + 1,
                               grid_size - 2, grid_size - 2)
     end
     love.graphics.setLineWidth(1) -- reset line width TODO better way to resolve this
@@ -228,11 +239,11 @@ function Piece:draw()
     local y = piece_ys[self.name][self.rot + 1][i]
     love.graphics.setColor(block_colors[self.name])
     love.graphics.rectangle('fill',
-                            self.field.fstartx + (self.x + x - 1) * grid_size, self.field.fstarty - (self.y - y) * grid_size,
+                            self.layout.field.fstartx + (self.x + x - 1) * grid_size, self.layout.field.fstarty - (self.y - y) * grid_size,
                             grid_size, grid_size)
     love.graphics.setColor(grid_color)
     love.graphics.rectangle('line',
-                            self.field.fstartx + (self.x + x - 1) * grid_size, self.field.fstarty - (self.y - y) * grid_size,
+                            self.layout.field.fstartx + (self.x + x - 1) * grid_size, self.layout.field.fstarty - (self.y - y) * grid_size,
                             grid_size, grid_size)
   end
 end
@@ -253,7 +264,7 @@ function Piece:collide(x, y, rot, field)
   local x = x or self.x
   local y = y or self.y
   local rot = rot or self.rot
-  local field = field or self.field
+  local field = field or self.layout.field
 
   for i = 1, num_piece_blocks do
     local x2 = x + piece_xs[self.name][rot + 1][i]
@@ -287,7 +298,7 @@ end
 --   self.softdropping = true
 --
 --   self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
---     if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+--     if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
 --       self.y = self.y - 1
 --     end
 --   end)
@@ -300,7 +311,7 @@ end
 --
 --   if not self.state.bot_play then
 --     self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
---       if not self:collide(self.x, self.y - 1, self.rot, self.field) then
+--       if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
 --         self.y = self.y - 1
 --       end
 --     end)
@@ -405,12 +416,12 @@ end
 function Piece:holdPiece()
   if hold_allowed and not self.hold_used then
     local _to_hold = self.name
-    if self.hold.name ~= nil then
-      self:reset(self.hold.name, true)
+    if self.layout.hold.name ~= nil then
+      self:reset(self.layout.hold.name, true)
     else
-      self:reset(piece_names[self.preview:next()], true)
+      self:reset(piece_names[self.layout.preview:next()], true)
     end
-    self.hold.name = _to_hold
+    self.layout.hold.name = _to_hold
 
     self.hold_used = true
   end
@@ -419,12 +430,12 @@ end
 function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
-    self.preview:peakBotString(num_bot_preview),
+    self.layout.preview:peakBotString(num_bot_preview),
     bot_piece_names[self.name],
-    bot_piece_names[self.hold:getBotName()],
-    self.field:convertBotStr(),
-    math.max(self.stat.combo_counter, 0),
-    self.stat.b2b and 1 or 0,
+    bot_piece_names[self.layout.hold:getBotName()],
+    self.layout.field:convertBotStr(),
+    self.layout.field.combo_count + 1,
+    self.layout.field.b2b_count + 1,
     0
     )
   bot_loader.think(function()
@@ -441,12 +452,12 @@ function Piece:updatePCFinder()
     function()
       self.pcFinderThinkFinished = true
     end,
-    self.field:convertPCFinderStr(),
-    self.name .. self.preview:peakString(num_pcfinder_preview),
-    self.hold:getPCFinderName(),
-    self.field:getPCHeight(),
-    math.max(self.stat.combo_counter, 0),
-    self.stat.b2b
+    self.layout.field:convertPCFinderStr(),
+    self.name .. self.layout.preview:peakString(num_pcfinder_preview),
+    self.layout.hold:getPCFinderName(),
+    self.layout.field:getPCHeight(),
+    self.layout.field.combo_count + 1,
+    self.layout.field.b2b_count + 1
     )
   self.timer:after(pcfinder_think_duration, function()
     pc_finder.terminate()
@@ -481,14 +492,19 @@ function Piece:reset(name, use_hold)
   -- end
 
   if not use_hold then self.bot_sequence = {} end  -- make sure bot seq empty for every no-hold new piece
+
+  -- Stat related
+  -- self.do_tspinmini = false
+  -- self.do_tspin = false
 end
 
 function Piece:setTSpin()
+  -- Mini involves kicking
   if self:collide(nil, nil, self.class.static.getRotateLeft(self.rot), nil)
     and self:collide(nil, nil, self.class.static.getRotateRight(self.rot), nil) then
-    self.stat.tspinmini = true
+    self.do_tspinmini = true
   else
-    self.stat.tspinmini = false
+    self.do_tspinmini = false
   end
 
   local tx = {0, 2, 0, 2}
@@ -496,15 +512,15 @@ function Piece:setTSpin()
 
   local count = 0
   for i = 1, #tx do
-    if self.field:getBlock(self.x + tx[i], self.y - ty[i]) ~= empty_block_value then
+    if self.layout.field:getBlock(self.x + tx[i], self.y - ty[i]) ~= empty_block_value then
       count = count + 1
     end
   end
 
   if count >= 3 then
-    self.stat.tspin = true
+    self.do_tspin = true
   else
-    self.stat.tspin = false
+    self.do_tspin = false
   end
 end
 
@@ -606,7 +622,7 @@ function Piece:preprocessPCSolution(solution)
     y = y + pcfinder_offset[name][rot + 1][2]
 
     local path = bot_loader.findPath(
-      self.field:convertBotStr(),
+      self.layout.field:convertBotStr(),
       bot_piece_names[name],
       x,
       v_grids - y,
@@ -625,4 +641,9 @@ function Piece:preprocessPCSolution(solution)
       self.bot_sequence = fn.clone(seq)
     end
   end
+end
+
+function Piece:adHocDebug()
+  fn.push(self.layout.field.incoming_garbage, love.math.random(1, 4))
+  print('Debug add random garbage: ', Inspect(self.layout.field.incoming_garbage))
 end

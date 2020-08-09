@@ -2,10 +2,11 @@ local Session = Game:addState('Session')
 
 function Session:enteredState()
   -- Session Env
-  self.pause = false
+  self.paused = false
   self.bot_play = bot_play
   self.pcfinder_play = pcfinder_play
-  self.start_time = love.timer.getTime()
+  self.previous_start_time = love.timer.getTime()
+  self.session_past_duration = 0
   self.session_duration = 0 -- (second)
   self.session_state = GAME_COUNTDOWN
   self.counting_down_text = nil
@@ -14,6 +15,7 @@ function Session:enteredState()
   -- Session State Input Handler
   input:bind('escape', 'pause')
   input:bind('backspace', 'restart')
+  input:bind('p', 'debug')
 
   -- if not self.bot_play then
   -- Always bind, just react differently
@@ -28,10 +30,10 @@ function Session:enteredState()
 
   -- Game Layouts
   if game_mode == 'match' then
-    l1 = Layout:new(self, 1, self.sstartx, self.sstarty)
-    l2 = Layout:new(self, 2, self.sstartx + 600, self.sstarty)
+    l1 = Layout:new(self, human_index, self.sstartx, self.sstarty)
+    l2 = Layout:new(self, human_index + 1, self.sstartx + 600, self.sstarty)
   elseif game_mode == 'analysis' then
-    layout = Layout:new(self, 2, self.sstartx, self.sstarty)
+    layout = Layout:new(self, human_index, self.sstartx, self.sstarty)
   end
 end
 
@@ -50,13 +52,25 @@ function Session:update(dt)
     end)
   end
 
-  if self.session_state == GAME_NORMAL then self.session_duration = love.timer.getTime() - self.start_time end -- TODO exclude pause time
+  -- if self.session_state == GAME_NORMAL then
+  --   self.session_duration = love.timer.getTime() - self.previous_start_time
+  -- end
+  if self.paused then
+    self.session_duration = self.session_past_duration
+  else
+    self.session_duration = self.session_past_duration + love.timer.getTime() - self.previous_start_time
+  end
 
   -- Switch State
   if input:pressed('pause') then
     -- TODO temporarily use in-state pause. Works quite well actually
     -- self:pushState('Pause')
-    self.pause = not self.pause
+    self.paused = not self.paused
+    if self.paused then -- accumulate time elapsed if pause
+      self.session_past_duration = self.session_past_duration + love.timer.getTime() - self.previous_start_time
+    else
+      self.previous_start_time = love.timer.getTime()
+    end
   end
   if input:pressed('restart') then self:gotoState('Session') end
   if self.session_state == GAME_LOSS then self:finish() end

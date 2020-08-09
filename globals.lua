@@ -9,13 +9,17 @@ num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 1 -- (frame)
-game_mode = 'match' -- analysis / match
+game_mode = 'analysis' -- analysis / match
 human_index = 1
 num_players = 2
 spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
 -- Garbage --
-pc_garbage = 8
+pc_garbage_bonus = 7
+base_garbage_table = {0, 1, 2, 4}
+tspin_garbage_table = {2, 4, 6}
+default_b2b_bonus_coeff = 1
+default_b2b_bonus_log = 0.8
 
 -- Bot --
 bot_play = true

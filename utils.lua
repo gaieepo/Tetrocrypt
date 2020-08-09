@@ -79,3 +79,8 @@ function table.copy(t)
   end
   return copy
 end
+
+function table.scale(t, s)
+  local g = function(v) return v * s end
+  return fn.mapi(t, g)
+end

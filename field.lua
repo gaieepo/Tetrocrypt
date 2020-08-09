@@ -12,11 +12,11 @@ end
 
 ------------------------------------
 
-function Field:initialize(stat, fsx, fsy)
+function Field:initialize(layout, fsx, fsy)
   Field.super.initialize(self)
 
   -- Entity reference
-  self.stat = stat
+  self.layout = layout
 
   -- Field Env
   self.trigger_update = false
@@ -27,6 +27,13 @@ function Field:initialize(stat, fsx, fsy)
   self.fstarty = fsy + field_sy_offset
   self.board = {}
   self.incoming_garbage = {}
+
+  -- Stat register
+  self.total_lines = 0
+  self.combo_count = -1 -- TODO research on combo and b2b initial register
+  self.b2b_count = -1 -- TODO should start from 0 or -1
+  self.current_attack = 0
+  self.total_attack = 0
 
   -- Initialize board
   for r = 1, v_grids + x_grids do
@@ -39,9 +46,10 @@ function Field:initialize(stat, fsx, fsy)
 
   -- Debug (TODO logic not smooth)
   if dig_mode then
-    self.dig_accumulator = 0
+    self.dig_timer = 0
   end
 
+  -- add to field collections
   self.class:add(self)
 end
 
@@ -87,28 +95,57 @@ end
 function Field:update(dt)
   Field.super.update(self, dt) -- update timer
 
-  local lines = self:checkLines()
-  if lines > 0 then
-    self.clearing = true
-    self:clearLines()
-    self.timer:after(line_clear_delay * frame_time, function()
-      self:fallStack()
-      self.clearing = false
-      self.cleared = true -- bot piece to update bot and finder
-    end)
-  end
-  if self.trigger_update then
-    -- self:calculateAttack(lines)
-    self.stat:updateStatus(lines, self:isEmpty())
-    -- Send garbage to the rest after update status
-    Field:sendGarbageToOthers(self.id, self.stat.current_attack)
-    self.stat.current_attack = 0 -- (TODO very dirty way to reset current attack)
-    self.trigger_update = false
-    self.field_updated = true
+  -- Dig mode timer
+  if dig_mode and self.dig_timer then
+    self.dig_timer = self.dig_timer + dt
   end
 
-  if dig_mode and self.dig_accumulator then
-    self.dig_accumulator = self.dig_accumulator + dt
+  -- Post piece event
+  if self.trigger_update then
+    -- Line clearing (including clear delay)
+    local lines = self:checkLines()
+
+    -- Update stat for all piece lock
+    self.total_lines = self.total_lines + lines
+    self.combo_count = lines == 0 and -1 or (self.combo_count + 1)
+
+    if lines > 0 then
+      self.clearing = true -- clearing will hold piece update if true
+      self:clearLines()
+      self.timer:after(line_clear_delay * frame_time, function()
+        self:fallStack()
+        self.clearing = false -- bot piece to update bot and finder
+        -- self.cleared = true TODO figure out when it is used
+      end)
+
+      -- Update stat when lines cleared
+      self.b2b_count = self:satisfyB2b(lines) and (self.b2b_count + 1) or -1
+      self.current_attack = self:calculateAttack(lines)
+      self.total_attack = self.total_attack + self.current_attack
+
+      -- Counter-garbage
+      if self.current_attack > 0 then
+        local attack_remain = self:counterGarbage(self.current_attack)
+
+        -- Send garbage to the rest if there are still fire left
+        -- (TODO more flexible tactic design)
+        if attack_remain > 0 then
+          Field:sendGarbageToOthers(self.id, attack_remain)
+        end
+      end
+    end
+
+    -- Dig mode logic
+    if dig_mode and self.dig_timer > dig_delay then
+      fn.push(self.incoming_garbage, 1)
+      self.dig_timer = 0
+    end
+
+    -- Spawn all existing garbage (TODO some will hold during combo)
+    self:spawnGarbage()
+
+    self.trigger_update = false
+    self.field_updated = true
   end
 end
 
@@ -153,19 +190,8 @@ function Field:addPiece(name, rot, x, y)
     self.board[y2][x2] = piece_ids[name]
   end
 
-  -- Trigger stat update (TODO stat should be done before garbage spawning, to counter incoming attack)
+  -- Trigger stat update for field cycle (addPiece called before field update)
   self.trigger_update = true
-
-  -- Dig mode logic
-  if dig_mode and self.dig_accumulator then
-    if self.dig_accumulator > dig_delay then
-      fn.push(self.incoming_garbage, 1)
-      self.dig_accumulator = 0
-    end
-  end
-
-  -- Garbage generation
-  self:spawnGarbage()
 end
 
 function Field:getBlock(x, y)
@@ -216,8 +242,7 @@ function Field:fallStack()
 
         -- top-most row should be all empty
         if self.debug_c4w then
-          local g = function(v) return v * garbage_block_value end
-          self.board[v_grids + x_grids] = fn.mapi({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, g)
+          self.board[v_grids + x_grids] = table.scale({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, garbage_block_value)
         else
           self.board[v_grids + x_grids] = table.zeros(h_grids)
         end
@@ -227,85 +252,149 @@ function Field:fallStack()
 end
 
 function Field:spawnGarbage()
-  local g = function(v) return v * garbage_block_value end
   while not table.empty(self.incoming_garbage) do
     lines = fn.pop(self.incoming_garbage)
     for r = v_grids + x_grids, 2, -1 do
       self.board[r] = table.copy(self.board[r - lines])
     end
-    local _single_garbage = fn.mapi(table.onezero(h_grids), g)
+    local _single_garbage = table.scale(table.onezero(h_grids), garbage_block_value)
     for r = 1, lines do
       self.board[r] = table.copy(_single_garbage)
     end
   end
 end
 
+function Field:counterGarbage(attack)
+  while not table.empty(self.incoming_garbage) do
+    if attack > self.incoming_garbage[1] then
+      attack = attack - self.incoming_garbage[1]
+      fn.pop(self.incoming_garbage)
+    else
+      self.incoming_garbage[1] = self.incoming_garbage[1] - attack
+      attack = 0
+      break
+    end
+  end
+  return attack
+end
+
+function Field:satisfyB2b(lines)
+  return lines == 4 or self.layout.piece.do_tspinmini or self.layout.piece.do_tspin
+end
+
+function Field:calculateB2bBonus(input_b2b)
+  -- similar to tetr.io garbage mechanics
+  local b2b = input_b2b or self.b2b_count
+  if b2b < 1 then return 0 end
+  local b2b_bonus_coeff = default_b2b_bonus_coeff
+  local b2b_bonus_log = default_b2b_bonus_log
+  return math.floor(b2b_bonus_coeff * (
+    math.floor(1 + math.log(1 + (b2b - 1) * b2b_bonus_log)) +
+    (b2b - 1 == 1 and 0 or ((1 + math.log(1 + (b2b - 1) * b2b_bonus_log) % 1) / 3))
+  ))
+end
+
+function Field:calculateComboBonus(input_combo)
+  local combo = input_combo or self.combo_count
+  local _combo_table = {
+    [1]  = 0,
+    [2]  = 1,
+    [3]  = 1,
+    [4]  = 2,
+    [5]  = 2,
+    [6]  = 3,
+    [7]  = 3,
+    [8]  = 4,
+    [9]  = 4,
+    [10] = 4,
+    [11] = 5,
+  }
+  if combo < 1 then
+    return 0
+  elseif combo < 12 then
+    return _combo_table[combo]
+  else
+    return _combo_table[#combo_table]
+  end
+end
+
+function Field:calculateAttack(lines)
+  -- Base attack
+  local base_attack = base_garbage_table[lines] -- 1, 2, 3 or 4
+
+  -- T-spin bonus
+  if self.layout.piece.do_tspin and not self.layout.piece.do_tspinmini then
+    base_attack = tspin_garbage_table[lines] -- can only be 1, 2, or 3
+  end
+
+  -- PC bonus (clear clear already executed)
+  local pc_bonus = self:isEmpty() and pc_garbage_bonus or 0
+
+  return base_attack + self:calculateComboBonus() + self:calculateB2bBonus() + pc_bonus
+end
+
 -- Debug --
 function Field:debugTSpin()
-  local g = function(v) return v * garbage_block_value end
-  self.board[8] = fn.mapi({0,0,0,0,0,1,0,0,0,0}, g)
-  self.board[7] = fn.mapi({0,0,1,1,0,1,1,0,0,0}, g)
-  self.board[6] = fn.mapi({0,0,0,1,1,1,1,0,0,1}, g)
-  self.board[5] = fn.mapi({1,1,0,1,1,1,1,1,1,1}, g)
-  self.board[4] = fn.mapi({1,0,0,1,1,1,1,1,1,1}, g)
-  self.board[3] = fn.mapi({1,0,0,0,1,1,1,1,1,1}, g)
-  self.board[2] = fn.mapi({1,1,0,1,1,1,1,1,1,1}, g)
-  self.board[1] = fn.mapi({1,1,0,1,1,1,1,1,1,1}, g)
+  self.board[8] = table.scale({0,0,0,0,0,1,0,0,0,0}, garbage_block_value)
+  self.board[7] = table.scale({0,0,1,1,0,1,1,0,0,0}, garbage_block_value)
+  self.board[6] = table.scale({0,0,0,1,1,1,1,0,0,1}, garbage_block_value)
+  self.board[5] = table.scale({1,1,0,1,1,1,1,1,1,1}, garbage_block_value)
+  self.board[4] = table.scale({1,0,0,1,1,1,1,1,1,1}, garbage_block_value)
+  self.board[3] = table.scale({1,0,0,0,1,1,1,1,1,1}, garbage_block_value)
+  self.board[2] = table.scale({1,1,0,1,1,1,1,1,1,1}, garbage_block_value)
+  self.board[1] = table.scale({1,1,0,1,1,1,1,1,1,1}, garbage_block_value)
 end
 
 function Field:debugC4W()
   self.debug_c4w = true
-  local g = function(v) return v * garbage_block_value end
-  self.board[1] = fn.mapi({1, 1, 1, 1, 1, 1, 0, 1, 1, 1}, g)
+  self.board[1] = table.scale({1, 1, 1, 1, 1, 1, 0, 1, 1, 1}, garbage_block_value)
   for i = 2, v_grids + x_grids do
-    self.board[i] = fn.mapi({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, g)
+    self.board[i] = table.scale({1, 1, 1, 0, 0, 0, 0, 1, 1, 1}, garbage_block_value)
   end
 end
 
 function Field:debugComplexTSpin()
-  local g = function(v) return v * garbage_block_value end
-  self.board[20] = fn.mapi({0,0,0,0,0,0,0,0,0,0}, g)
-  self.board[19] = fn.mapi({0,0,0,0,0,0,0,0,0,0}, g)
-  self.board[18] = fn.mapi({1,1,1,1,0,0,0,0,0,0}, g)
-  self.board[17] = fn.mapi({1,1,1,0,0,0,0,0,1,1}, g)
-  self.board[16] = fn.mapi({1,1,1,0,1,1,1,1,1,1}, g)
-  self.board[15] = fn.mapi({1,1,1,0,0,0,0,1,1,1}, g)
-  self.board[14] = fn.mapi({1,1,1,0,0,0,1,1,1,1}, g)
-  self.board[13] = fn.mapi({1,1,1,1,1,0,0,1,1,1}, g)
-  self.board[12] = fn.mapi({1,1,1,1,1,0,0,0,1,1}, g)
-  self.board[11] = fn.mapi({1,1,1,1,1,1,1,0,1,1}, g)
-  self.board[10] = fn.mapi({1,1,1,1,1,1,0,0,1,1}, g)
-  self.board[ 9] = fn.mapi({1,1,1,1,0,0,0,0,1,1}, g)
-  self.board[ 8] = fn.mapi({1,1,1,1,0,0,0,1,1,1}, g)
-  self.board[ 7] = fn.mapi({1,1,1,1,0,0,1,1,1,1}, g)
-  self.board[ 6] = fn.mapi({1,1,1,1,0,0,0,1,1,1}, g)
-  self.board[ 5] = fn.mapi({1,1,1,1,1,1,0,1,1,1}, g)
-  self.board[ 4] = fn.mapi({1,1,1,1,1,0,0,0,1,1}, g)
-  self.board[ 3] = fn.mapi({1,1,1,1,1,1,0,1,1,1}, g)
-  self.board[ 2] = fn.mapi({1,1,1,1,0,1,1,1,1,1}, g)
-  self.board[ 1] = fn.mapi({1,1,1,1,1,0,1,1,1,1}, g)
+  self.board[20] = table.scale({0,0,0,0,0,0,0,0,0,0}, garbage_block_value)
+  self.board[19] = table.scale({0,0,0,0,0,0,0,0,0,0}, garbage_block_value)
+  self.board[18] = table.scale({1,1,1,1,0,0,0,0,0,0}, garbage_block_value)
+  self.board[17] = table.scale({1,1,1,0,0,0,0,0,1,1}, garbage_block_value)
+  self.board[16] = table.scale({1,1,1,0,1,1,1,1,1,1}, garbage_block_value)
+  self.board[15] = table.scale({1,1,1,0,0,0,0,1,1,1}, garbage_block_value)
+  self.board[14] = table.scale({1,1,1,0,0,0,1,1,1,1}, garbage_block_value)
+  self.board[13] = table.scale({1,1,1,1,1,0,0,1,1,1}, garbage_block_value)
+  self.board[12] = table.scale({1,1,1,1,1,0,0,0,1,1}, garbage_block_value)
+  self.board[11] = table.scale({1,1,1,1,1,1,1,0,1,1}, garbage_block_value)
+  self.board[10] = table.scale({1,1,1,1,1,1,0,0,1,1}, garbage_block_value)
+  self.board[ 9] = table.scale({1,1,1,1,0,0,0,0,1,1}, garbage_block_value)
+  self.board[ 8] = table.scale({1,1,1,1,0,0,0,1,1,1}, garbage_block_value)
+  self.board[ 7] = table.scale({1,1,1,1,0,0,1,1,1,1}, garbage_block_value)
+  self.board[ 6] = table.scale({1,1,1,1,0,0,0,1,1,1}, garbage_block_value)
+  self.board[ 5] = table.scale({1,1,1,1,1,1,0,1,1,1}, garbage_block_value)
+  self.board[ 4] = table.scale({1,1,1,1,1,0,0,0,1,1}, garbage_block_value)
+  self.board[ 3] = table.scale({1,1,1,1,1,1,0,1,1,1}, garbage_block_value)
+  self.board[ 2] = table.scale({1,1,1,1,0,1,1,1,1,1}, garbage_block_value)
+  self.board[ 1] = table.scale({1,1,1,1,1,0,1,1,1,1}, garbage_block_value)
 end
 
 function Field:debugTSpinTower()
-  local g = function(v) return v * garbage_block_value end
-  self.board[20] = fn.mapi({1,1,1,0,0,0,0,0,0,0}, g)
-  self.board[19] = fn.mapi({1,1,1,1,1,1,1,0,0,0}, g)
-  self.board[18] = fn.mapi({0,0,0,0,0,0,0,1,0,0}, g)
-  self.board[17] = fn.mapi({0,0,0,0,0,0,0,0,0,1}, g)
-  self.board[16] = fn.mapi({0,0,0,1,0,0,0,1,0,0}, g)
-  self.board[15] = fn.mapi({0,0,1,0,0,1,0,0,0,1}, g)
-  self.board[14] = fn.mapi({1,0,0,0,0,0,0,1,0,0}, g)
-  self.board[13] = fn.mapi({1,0,0,0,0,1,0,0,0,1}, g)
-  self.board[12] = fn.mapi({0,0,0,1,0,0,0,1,0,0}, g)
-  self.board[11] = fn.mapi({0,1,0,0,0,1,0,0,0,1}, g)
-  self.board[10] = fn.mapi({0,0,0,0,0,0,0,1,0,0}, g)
-  self.board[ 9] = fn.mapi({0,0,1,0,0,1,0,0,0,1}, g)
-  self.board[ 8] = fn.mapi({1,0,0,0,0,0,0,1,0,0}, g)
-  self.board[ 7] = fn.mapi({0,0,0,1,0,1,0,0,0,1}, g)
-  self.board[ 6] = fn.mapi({1,1,0,0,0,0,0,1,0,0}, g)
-  self.board[ 5] = fn.mapi({0,0,0,0,1,1,0,0,0,1}, g)
-  self.board[ 4] = fn.mapi({0,0,0,0,0,0,0,1,0,0}, g)
-  self.board[ 3] = fn.mapi({1,0,1,1,0,0,1,0,0,1}, g)
-  self.board[ 2] = fn.mapi({1,0,0,0,0,0,0,0,0,0}, g)
-  self.board[ 1] = fn.mapi({0,0,0,0,0,0,0,0,0,0}, g)
+  self.board[20] = table.scale({1,1,1,0,0,0,0,0,0,0}, garbage_block_value)
+  self.board[19] = table.scale({1,1,1,1,1,1,1,0,0,0}, garbage_block_value)
+  self.board[18] = table.scale({0,0,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[17] = table.scale({0,0,0,0,0,0,0,0,0,1}, garbage_block_value)
+  self.board[16] = table.scale({0,0,0,1,0,0,0,1,0,0}, garbage_block_value)
+  self.board[15] = table.scale({0,0,1,0,0,1,0,0,0,1}, garbage_block_value)
+  self.board[14] = table.scale({1,0,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[13] = table.scale({1,0,0,0,0,1,0,0,0,1}, garbage_block_value)
+  self.board[12] = table.scale({0,0,0,1,0,0,0,1,0,0}, garbage_block_value)
+  self.board[11] = table.scale({0,1,0,0,0,1,0,0,0,1}, garbage_block_value)
+  self.board[10] = table.scale({0,0,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[ 9] = table.scale({0,0,1,0,0,1,0,0,0,1}, garbage_block_value)
+  self.board[ 8] = table.scale({1,0,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[ 7] = table.scale({0,0,0,1,0,1,0,0,0,1}, garbage_block_value)
+  self.board[ 6] = table.scale({1,1,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[ 5] = table.scale({0,0,0,0,1,1,0,0,0,1}, garbage_block_value)
+  self.board[ 4] = table.scale({0,0,0,0,0,0,0,1,0,0}, garbage_block_value)
+  self.board[ 3] = table.scale({1,0,1,1,0,0,1,0,0,1}, garbage_block_value)
+  self.board[ 2] = table.scale({1,0,0,0,0,0,0,0,0,0}, garbage_block_value)
+  self.board[ 1] = table.scale({0,0,0,0,0,0,0,0,0,0}, garbage_block_value)
 end

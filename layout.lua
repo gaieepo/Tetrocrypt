@@ -24,22 +24,24 @@ function Layout:initialize(state, lidx, lsx, lsy)
 
   self.hold = Hold:new(self.lstartx, self.lstarty)
   self.preview = Preview:new(self.lstartx, self.lstarty)
-  self.stat = Stat:new(state)
-  self.field = Field:new(self.stat, self.lstartx, self.lstarty)
-  self.piece = Piece:new(state, self.is_human, self.hold, self.preview, self.stat, self.field, piece_names[self.preview:next()])
+  self.stat = Stat:new(state, self)
+  self.field = Field:new(self, self.lstartx, self.lstarty)
+  self.piece = Piece:new(state, self, piece_names[self.preview:next()])
 
+  -- add to layout collections
   self.class:add(self)
 end
 
 function Layout:update(dt)
   -- Entity Update
-  if not self.state.pause then
+  if not self.state.paused then
     if self.state.session_state == GAME_NORMAL then
-      self.field:update(dt)
-
       if not self.field.clearing then
         self.piece:update(dt)
       end
+
+      -- May involve post add piece triggered update
+      self.field:update(dt)
     end
   end
 end
