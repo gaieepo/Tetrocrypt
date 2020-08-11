@@ -435,7 +435,7 @@ function Piece:updateBot()
     bot_piece_names[self.layout.hold:getBotName()],
     self.layout.field:convertBotStr(),
     self.layout.field.combo_count + 1,
-    self.layout.field.b2b_count + 1,
+    self.layout.field.b2b_count,
     0
     )
   bot_loader.think(function()
@@ -457,7 +457,7 @@ function Piece:updatePCFinder()
     self.layout.hold:getPCFinderName(),
     self.layout.field:getPCHeight(),
     self.layout.field.combo_count + 1,
-    self.layout.field.b2b_count + 1
+    self.layout.field.b2b_count
     )
   self.timer:after(pcfinder_think_duration, function()
     pc_finder.terminate()

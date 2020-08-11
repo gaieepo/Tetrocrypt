@@ -30,8 +30,8 @@ function Field:initialize(layout, fsx, fsy)
 
   -- Stat register
   self.total_lines = 0
-  self.combo_count = -1 -- TODO research on combo and b2b initial register
-  self.b2b_count = -1 -- TODO should start from 0 or -1
+  self.combo_count = -1
+  self.b2b_count = 0
   self.current_attack = 0
   self.total_attack = 0
 
@@ -105,7 +105,7 @@ function Field:update(dt)
     -- Line clearing (including clear delay)
     local lines = self:checkLines()
 
-    -- Update stat for all piece lock
+    -- Update stat (for all piece lock)
     self.total_lines = self.total_lines + lines
     self.combo_count = lines == 0 and -1 or (self.combo_count + 1)
 
@@ -118,10 +118,12 @@ function Field:update(dt)
         -- self.cleared = true TODO figure out when it is used
       end)
 
-      -- Update stat when lines cleared
-      self.b2b_count = self:satisfyB2b(lines) and (self.b2b_count + 1) or -1
+      -- Update stat (when lines cleared)
       self.current_attack = self:calculateAttack(lines)
       self.total_attack = self.total_attack + self.current_attack
+
+      -- Post attack (b2b should be updated after attack)
+      self.b2b_count = self:recognizeB2b(lines) and (self.b2b_count + 1) or 0
 
       -- Counter-garbage
       if self.current_attack > 0 then
@@ -278,7 +280,7 @@ function Field:counterGarbage(attack)
   return attack
 end
 
-function Field:satisfyB2b(lines)
+function Field:recognizeB2b(lines)
   return lines == 4 or self.layout.piece.do_tspinmini or self.layout.piece.do_tspin
 end
 
@@ -310,7 +312,7 @@ function Field:calculateComboBonus(input_combo)
     [11] = 5,
   }
   if combo < 1 then
-    return 0
+    return 0 -- no bonus for only two consecutive line clears
   elseif combo < 12 then
     return _combo_table[combo]
   else
