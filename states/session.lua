@@ -31,7 +31,7 @@ function Session:enteredState()
   -- Game Layouts
   if game_mode == 'match' then
     l1 = Layout:new(self, human_index, self.sstartx, self.sstarty)
-    l2 = Layout:new(self, human_index + 1, self.sstartx + 600, self.sstarty)
+    l2 = Layout:new(self, human_index + 1, self.sstartx + 500, self.sstarty)
   elseif game_mode == 'analysis' then
     layout = Layout:new(self, human_index, self.sstartx, self.sstarty)
   end

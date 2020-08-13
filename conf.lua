@@ -1,5 +1,5 @@
 -- Window constant
-gw = 1200
+gw = 1000
 gh = 600
 scalex = 1
 scaley = 1
