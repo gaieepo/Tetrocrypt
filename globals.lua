@@ -30,14 +30,85 @@ tspin_garbage_table = {2, 4, 6}
 default_b2b_bonus_coeff = 1
 default_b2b_bonus_log = 0.8
 
--- Bot --
+-- Bot & PC Finder --
 bot_play = true
+pcfinder_play = false
+bot_move_delay = 1 -- (frame)
+
 num_bot_preview = 14
 think_duration = 0.1
-bot_move_delay = 1 -- (frame)
-pcfinder_play = true
+bot_holdallowed = true
+bot_allspin = false
+bot_tsdonly = false
+bot_searchwidth = 1000 -- 1000 optimal
+
 num_pcfinder_preview = 14
 pcfinder_think_duration = 0.1
+
+bot_params = {
+  -- MISAMINO
+  -- 16, 9, 11, 17, 17,
+  -- 25, 39, 2, 12, 19,
+  -- 7, 24, 18, 7, 14,
+  -- 19, 25, 30, 18, 19,
+  -- 0,
+
+  -- TSPIN + B2B (baseline)
+  16, 9, 11, 17, 17,
+  25, 39, 2, 12, 19,
+  7, 24, 18, 7, 14,
+  19, 99, 14, 19, 0,
+  0,
+
+  -- TSPINPLUS
+  -- 13, 9, 17, 10, 29,
+  -- 25, 39, 2, 12, 19,
+  -- 7, 24, 21, 16, 14,
+  -- 19, 0, 30, 0, 24,
+  -- 0,
+
+  -- TST
+  -- 16, 9, 11, 17, 500,
+  -- 25, 39, 2, 12, 19,
+  -- 7, 1, 18, 7, 14,
+  -- 19, 25, 30, 18, 19,
+  -- 0,
+
+  -- Ultra
+  -- 16, 9, 11, 23, 20,
+  -- 1, 39, 2, 12, 19,
+  -- 7, 24, 32, 16, 1,
+  -- 19, 500, 0, 63, 0,
+  -- 0,
+
+  -- TSD20 (not exactly)
+  -- 0, 0, 0, 500, 0,
+  -- 0, 0, 2, 12, 19,
+  -- 7, 74, 0, 0, 0,
+  -- 19, 500, 0, 0, 0,
+  -- 0,
+
+  -- JSTSPIN (baseline)
+  -- 13, 9, 17, 10, 29,
+  -- 25, 39, 2, 12, 19,
+  -- 7, 24, 21, 16, 14,
+  -- 19, 0, 0, 0, 0,
+  -- 200,
+
+  -- JSREN
+  -- 13, 9, 17, 10, -271,
+  -- 25, 39, 2, 12, 19,
+  -- 7, -276, 21, 16, 11,
+  -- 19, 0, 0, 0, 0,
+  -- 200,
+
+  -- RENTRAIN (combo practice)
+  -- 13, 9, 17, 10, -300,
+  -- 25, 39, 2, 12, 19,
+  -- 7, -300, 21, 16, 9,
+  -- 19, 0, 500, 0, 0,
+  -- 200
+}
 
 -- Colors --
 session_background_color = { 10/255,  10/255,  10/255}
