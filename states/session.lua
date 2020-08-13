@@ -5,12 +5,14 @@ function Session:enteredState()
   self.paused = false
   self.bot_play = bot_play
   self.pcfinder_play = pcfinder_play
+  self.session_status = SESSION_COUNTDOWN
+  self.counting_down_text = nil
+  self.sstartx, self.sstarty = session_startx, session_starty
+
+  -- timer
   self.previous_start_time = love.timer.getTime()
   self.session_past_duration = 0
   self.session_duration = 0 -- (second)
-  self.session_state = GAME_COUNTDOWN
-  self.counting_down_text = nil
-  self.sstartx, self.sstarty = session_startx, session_starty
 
   -- Session State Input Handler
   input:bind('escape', 'pause')
@@ -29,10 +31,10 @@ function Session:enteredState()
   input:bind('q', 'hold')
 
   -- Game Layouts
-  if game_mode == 'match' then
+  if session_mode == 'match' then
     l1 = Layout:new(self, human_index, self.sstartx, self.sstarty)
     l2 = Layout:new(self, human_index + 1, self.sstartx + 500, self.sstarty)
-  elseif game_mode == 'analysis' then
+  elseif session_mode == 'analysis' then
     layout = Layout:new(self, human_index, self.sstartx, self.sstarty)
   end
 end
@@ -43,8 +45,9 @@ function Session:update(dt)
 
   -- Session Env
   -- Count down
-  if self.session_state == GAME_COUNTDOWN and self.counting_down_text == nil then
-    self.timer:after(1, function() self.session_state = GAME_NORMAL end)
+  if self.session_status == SESSION_COUNTDOWN and self.counting_down_text == nil then
+    self.timer:after(1, function() self.session_status = SESSION_NORMAL end)
+
     self.timer:during(0.5, function() self.counting_down_text = 'READY' end, function()
       self.timer:during(0.5, function() self.counting_down_text = 'GO' end, function()
         self.counting_down_text = nil
@@ -52,10 +55,7 @@ function Session:update(dt)
     end)
   end
 
-  -- if self.session_state == GAME_NORMAL then
-  --   self.session_duration = love.timer.getTime() - self.previous_start_time
-  -- end
-  if self.paused then
+  if self.paused or self.session_status ~= SESSION_NORMAL then
     self.session_duration = self.session_past_duration
   else
     self.session_duration = self.session_past_duration + love.timer.getTime() - self.previous_start_time
@@ -66,14 +66,22 @@ function Session:update(dt)
     -- TODO temporarily use in-state pause. Works quite well actually
     -- self:pushState('Pause')
     self.paused = not self.paused
-    if self.paused then -- accumulate time elapsed if pause
+    if self.paused then
+      -- accumulate time elapsed if pause
       self.session_past_duration = self.session_past_duration + love.timer.getTime() - self.previous_start_time
     else
       self.previous_start_time = love.timer.getTime()
     end
   end
   if input:pressed('restart') then self:gotoState('Session') end
-  if self.session_state == GAME_LOSS then self:finish() end
+
+  local is_all_layout_normal, layout_id = Layout:allNormal()
+  if self.session_status ~= SESSION_END and not is_all_layout_normal then
+    self.session_status = SESSION_END
+    -- accumulate time elapsed if session ends
+    self.session_past_duration = self.session_past_duration + love.timer.getTime() - self.previous_start_time
+    self:finish()
+  end
 
   -- Entity Update
   Layout:updateAll(dt)
@@ -91,7 +99,7 @@ function Session:draw()
   Layout:drawAll()
 
   -- Dead
-  if self.session_state == GAME_LOSS then
+  if self.session_status == SESSION_END then
     local temp_font = love.graphics.newFont(default_font, 50)
     love.graphics.setColor(1, 0, 0)
     love.graphics.setFont(temp_font)

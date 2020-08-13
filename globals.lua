@@ -9,10 +9,19 @@ num_preview = 6
 default_font = 'firacode_retina.ttf'
 default_font_size = 20
 line_clear_delay = 1 -- (frame)
-game_mode = 'analysis' -- analysis / match
+spin_mode = 'tspinonly' -- disable / tspinonly / allspin
+
+SESSION_NORMAL = 1
+SESSION_COUNTDOWN = 2
+SESSION_END = 4
+GAME_NORMAL = 8
+GAME_WIN = 16
+GAME_LOSE = 32
+session_mode = 'analysis' -- analysis / match
+game_mode = 'sprint' -- infinite / sprint
+sprint_lines = 40
 human_index = 1
 num_players = 2
-spin_mode = 'tspinonly' -- disable / tspinonly / allspin
 
 -- Garbage --
 pc_garbage_bonus = 7
@@ -29,12 +38,6 @@ bot_move_delay = 1 -- (frame)
 pcfinder_play = true
 num_pcfinder_preview = 14
 pcfinder_think_duration = 0.1
-
-GAME_NORMAL = 0
-GAME_WIN = 1
-GAME_COUNTDOWN = 2
-GAME_NOT = 3
-GAME_LOSS = 4
 
 -- Colors --
 session_background_color = { 10/255,  10/255,  10/255}

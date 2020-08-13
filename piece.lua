@@ -92,7 +92,7 @@ function Piece:update(dt)
 
   -- A: is match, B: bot play, C: is human
   -- (C)(A + B') or B'C + AC
-  if self.is_human and (game_mode == 'match' or not self.state.bot_play) then
+  if self.is_human and (session_mode == 'match' or not self.state.bot_play) then
     if input:pressed('harddrop') then self:harddrop() end
     -- if input:pressed('softdrop') then self:onSoftdropStart() end
     -- if input:released('softdrop') then self:onSoftdropEnd() end
@@ -134,10 +134,10 @@ function Piece:update(dt)
   -- Bot logic
   if self.layout.field.field_updated and self.reset_done then
     -- (B)(A' + C')
-    if self.state.bot_play and (not self.is_human or game_mode == 'analysis') then
+    if self.state.bot_play and (not self.is_human or session_mode == 'analysis') then
       self:updateBot()
     end
-    if self.state.pcfinder_play and (not self.is_human or game_mode == 'analysis') then
+    if self.state.pcfinder_play and (not self.is_human or session_mode == 'analysis') then
       self:updatePCFinder()
     end
     self.layout.field.field_updated = false
@@ -209,10 +209,11 @@ function Piece:update(dt)
     -- self.force_lock_delay = 0 (caution: temporary floating does not reset force lock delay)
   end
 
-  -- Dead condition (might move to session)
-  -- 1. spawn with collision, when legal collide everything
-  -- 2. lock with higher than visible field TODO
-  if self:collide() then self.state.session_state = GAME_LOSS end
+  -- Dead condition (TODO)
+  -- 1. Block out: a piece is spawned overlapping at least one block in the playfield (done with naive anytime-collide)
+  -- 2. Lock out: a piece locks when it is entirely out of bounds (that is, in the vanish zone above the ceiling)
+  -- 3. Garbage out: After lines are cleared and garbage is added, a block remains out of bounds, or an existing block in the field is pushed to 41st or higher row by garbage lines sent to the player
+  if self:collide() then self.layout.game_status = GAME_LOSE end
 end
 
 function Piece:draw()
@@ -494,8 +495,6 @@ function Piece:reset(name, use_hold)
   if not use_hold then self.bot_sequence = {} end  -- make sure bot seq empty for every no-hold new piece
 
   -- Stat related
-  -- self.do_tspinmini = false
-  -- self.do_tspin = false
 end
 
 function Piece:setTSpin()

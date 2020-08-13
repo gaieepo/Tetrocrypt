@@ -149,6 +149,11 @@ function Field:update(dt)
     self.trigger_update = false
     self.field_updated = true
   end
+
+  -- Game Mode
+  if session_mode == 'analysis' and game_mode == 'sprint' and self.total_lines >= sprint_lines then
+    self.layout.game_status = GAME_WIN
+  end
 end
 
 function Field:draw()

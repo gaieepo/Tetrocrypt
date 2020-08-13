@@ -14,6 +14,15 @@ function Layout.static:destroyAll()
   self:safeEach('destroy')
 end
 
+function Layout.static:allNormal()
+  for instance, _ in pairs(self._instances) do
+    if instance.game_status ~= GAME_NORMAL then
+      return false, instance.id
+    end
+  end
+  return true, nil
+end
+
 ------------------------------------
 
 function Layout:initialize(state, lidx, lsx, lsy)
@@ -22,6 +31,9 @@ function Layout:initialize(state, lidx, lsx, lsy)
   self.is_human = (lidx == human_index) -- (TODO) use unique identifier
   self.lstartx, self.lstarty = lsx, lsy
 
+  -- Layout Env
+  self.game_status = GAME_NORMAL
+
   self.hold = Hold:new(self.lstartx, self.lstarty)
   self.preview = Preview:new(self.lstartx, self.lstarty)
   self.stat = Stat:new(state, self)
@@ -29,13 +41,15 @@ function Layout:initialize(state, lidx, lsx, lsy)
   self.piece = Piece:new(state, self, piece_names[self.preview:next()])
 
   -- add to layout collections
+  -- Use field id as layout id, unique anyways
+  self.id = self.field.id -- TODO maybe there is a better way to uuid layout
   self.class:add(self)
 end
 
 function Layout:update(dt)
   -- Entity Update
   if not self.state.paused then
-    if self.state.session_state == GAME_NORMAL then
+    if self.state.session_status == SESSION_NORMAL then
       if not self.field.clearing then
         self.piece:update(dt)
       end
@@ -51,7 +65,7 @@ function Layout:draw()
   self.preview:draw()
   self.field:draw()
   self.piece:draw()
-  if game_mode == 'analysis' then
+  if session_mode == 'analysis' then
     self.stat:draw()
   end
 end
