@@ -2,8 +2,7 @@
 
 resources/
 libraries/
-bot/
-pcfinder/
+lua51/
 
 *.swp
 TODO*
