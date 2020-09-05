@@ -25,6 +25,7 @@ function Stat:draw()
   love.graphics.print('LPM:          ' .. string.format('%.1f', 60 * self.layout.field.total_lines / self.state.session_duration), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('Combo:        ' .. self.layout.field.combo_count, stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('B2B:          ' .. tostring(self.layout.field.b2b_count), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
+  love.graphics.print('PS:           ' .. tostring(self.layout.field.ps_count), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('Curr Attack:  ' .. self.layout.field.current_attack, stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('Total Attack: ' .. self.layout.field.total_attack, stat_sx_offset, sy_offset); sy_offset = sy_offset + 30
   love.graphics.print('APM:          ' .. string.format('%.1f', 60 * self.layout.field.total_attack / self.state.session_duration), stat_sx_offset, sy_offset); sy_offset = sy_offset + 30

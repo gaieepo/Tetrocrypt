@@ -18,7 +18,7 @@ GAME_NORMAL = 8
 GAME_WIN = 16
 GAME_LOSE = 32
 session_mode = 'analysis' -- analysis / match
-game_mode = 'sprint' -- infinite / sprint
+game_mode = 'infinite' -- infinite / sprint
 sprint_lines = 40
 human_index = 1
 num_players = 2
@@ -32,7 +32,7 @@ default_b2b_bonus_log = 0.8
 
 -- Bot & PC Finder --
 bot_play = true
-pcfinder_play = false
+pcfinder_play = true
 bot_move_delay = 1 -- (frame)
 
 num_bot_preview = 14
@@ -46,6 +46,19 @@ num_pcfinder_preview = 14
 pcfinder_think_duration = 0.1
 
 bot_params = {
+  -- miny_factor, hole, open_hole, v_transitions, tspin3,
+  -- clear_efficient, upcomeAtt, h_factor, hole_dis_factor2, hole_dis, // flat_factor,
+  -- hole_dis_factor, tspin, hole_T, hole_I, clear_useless_factor, // ready_combo,
+  -- dif_factor, b2b, combo, avoid_softdrop, tmini,
+  -- strategy_4w,
+
+  -- Sprint 40L
+  -- 0, 0, 0, 0, -300,
+  -- 0, 0, 0, 0, 0,
+  -- 0, -300, 0, 0, 0,
+  -- 0, 0, 0, 300, -300,
+  -- 0
+
   -- MISAMINO
   -- 16, 9, 11, 17, 17,
   -- 25, 39, 2, 12, 19,
@@ -165,6 +178,7 @@ field_sx_offset = 150 -- (pixel)
 field_sy_offset = 550 -- (pixel)
 garbage_block_value = 10
 empty_block_value = 0
+lock_color = 'colored' -- single / colored
 dig_mode = false
 dig_delay = 1
 

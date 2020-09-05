@@ -32,6 +32,8 @@ function Field:initialize(layout, fsx, fsy)
   self.total_lines = 0
   self.combo_count = -1
   self.b2b_count = 0
+  self.pc_distance = 0 -- piece distance since last pc
+  self.ps_count = 0 -- pc series count
   self.current_attack = 0
   self.total_attack = 0
 
@@ -124,6 +126,10 @@ function Field:update(dt)
 
       -- Post attack (b2b should be updated after attack)
       self.b2b_count = self:recognizeB2b(lines) and (self.b2b_count + 1) or 0
+      if self:isEmpty() then -- Perfect Clear
+        self.ps_count = self:recognizePS() and (self.ps_count + 1) or 0
+        self.pc_distance = 0
+      end
 
       -- Counter-garbage
       if self.current_attack > 0 then
@@ -161,12 +167,14 @@ function Field:draw()
   for i, row in ipairs(self.board) do
     if i <= display_height then
       for j, col in ipairs(row) do
-        if self.board[i][j] == 0 then
+        if self.board[i][j] == empty_block_value then
           love.graphics.setColor(block_colors['E'])
         elseif self.board[i][j] == garbage_block_value then
           love.graphics.setColor(block_colors['B'])
-        else
+        elseif lock_color == 'colored' then
           love.graphics.setColor(fn.mapi(block_colors[piece_names[self.board[i][j]]], function(v) return v * 0.8 end))
+        elseif lock_color == 'single' then
+          love.graphics.setColor(block_colors['B'])
         end
         love.graphics.rectangle('fill',
                                 self.fstartx + (j - 1) * grid_size, self.fstarty - i * grid_size,
@@ -196,6 +204,9 @@ function Field:addPiece(name, rot, x, y)
     local y2 = y - piece_ys[name][rot + 1][i]
     self.board[y2][x2] = piece_ids[name]
   end
+
+  -- PC distance: pieces since last PC
+  self.pc_distance = self.pc_distance + 1
 
   -- Trigger stat update for field cycle (addPiece called before field update)
   self.trigger_update = true
@@ -289,6 +300,12 @@ function Field:recognizeB2b(lines)
   return lines == 4 or self.layout.piece.do_tspinmini or self.layout.piece.do_tspin
 end
 
+function Field:recognizePS(distance)
+  -- PC Series: consecutive PCs with maximum pc distance of 15 (six-line PC)
+  local distance = distance or self.pc_distance
+  return distance < 16
+end
+
 function Field:calculateB2bBonus(input_b2b)
   -- similar to tetr.io garbage mechanics
   local b2b = input_b2b or self.b2b_count
@@ -299,6 +316,14 @@ function Field:calculateB2bBonus(input_b2b)
     math.floor(1 + math.log(1 + (b2b - 1) * b2b_bonus_log)) +
     (b2b - 1 == 1 and 0 or ((1 + math.log(1 + (b2b - 1) * b2b_bonus_log) % 1) / 3))
   ))
+end
+
+function Field:calculatePCBonus(lines, input_ps)
+  local base_pc_bonus = (self:isEmpty() and pc_garbage_bonus or 0) + lines
+  local ps = input_ps or self.ps_count
+  if ps < 1 then return base_pc_bonus end
+  local ps_bonus = math.floor(math.log(ps))
+  return ps_bonus + base_pc_bonus
 end
 
 function Field:calculateComboBonus(input_combo)
@@ -335,9 +360,8 @@ function Field:calculateAttack(lines)
   end
 
   -- PC bonus (clear clear already executed)
-  local pc_bonus = self:isEmpty() and pc_garbage_bonus or 0
 
-  return base_attack + self:calculateComboBonus() + self:calculateB2bBonus() + pc_bonus
+  return base_attack + self:calculateComboBonus() + self:calculateB2bBonus() + self:calculatePCBonus(lines)
 end
 
 -- Debug --
