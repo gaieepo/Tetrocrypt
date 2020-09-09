@@ -4,11 +4,11 @@ function Preview:initialize(psx, psy)
   self.queue = {}
   self.generate_count = 0
 
-  self.pstartx = psx + preview_sx_offset
-  self.pstarty = psy + preview_sy_offset
+  self.pstartx = psx + PREVIEW_SX_OFFSET
+  self.pstarty = psy + PREVIEW_SY_OFFSET
 
   -- Initialize queue
-  for i = 1, num_bags do
+  for i = 1, NUM_BAGS do
     self.queue = fn.append(self.queue, self:nextBag())
   end
 end
@@ -17,25 +17,25 @@ function Preview:update(dt)
 end
 
 function Preview:draw()
-  local _nextn = self:peak(num_preview)
+  local _nextn = self:peak(NUM_PREVIEW)
   for index, pid in ipairs(_nextn) do
-    for i = 1, num_piece_blocks do
-      local x = piece_xs[piece_names[pid]][1][i]
-      local y = piece_ys[piece_names[pid]][1][i]
-      love.graphics.setColor(block_colors[piece_names[pid]])
+    for i = 1, NUM_PIECE_BLOCKS do
+      local x = PIECE_XS[PIECE_NAMES[pid]][1][i]
+      local y = PIECE_YS[PIECE_NAMES[pid]][1][i]
+      love.graphics.setColor(BLOCK_COLORS[PIECE_NAMES[pid]])
       love.graphics.rectangle('fill',
-                              self.pstartx + x * grid_size, self.pstarty + (index - 1) * y_separation + y * grid_size,
-                              grid_size, grid_size)
-      love.graphics.setColor(grid_color)
+                              self.pstartx + x * GRID_SIZE, self.pstarty + (index - 1) * Y_SEPARATION + y * GRID_SIZE,
+                              GRID_SIZE, GRID_SIZE)
+      love.graphics.setColor(GRID_COLOR)
       love.graphics.rectangle('line',
-                              self.pstartx + x * grid_size, self.pstarty + (index - 1) * y_separation + y * grid_size,
-                              grid_size, grid_size)
+                              self.pstartx + x * GRID_SIZE, self.pstarty + (index - 1) * Y_SEPARATION + y * GRID_SIZE,
+                              GRID_SIZE, GRID_SIZE)
     end
   end
 end
 
 function Preview:nextBag()
-  local bag = table.shuffle(base_bag)
+  local bag = table.shuffle(BASE_BAG)
   return bag
 end
 
@@ -43,7 +43,7 @@ function Preview:next()
   local _next = fn.shift(self.queue, 1)
   self.generate_count = self.generate_count + 1
 
-  if #self.queue <= (num_bags - 1) * #base_bag then
+  if #self.queue <= (NUM_BAGS - 1) * #BASE_BAG then
     self.queue = fn.append(self.queue, self:nextBag())
   end
   return _next
@@ -62,7 +62,7 @@ function Preview:peakBotString(n)
   local delimiter = ','
   local d = ''
   for i = 1, n do
-    _nextn = _nextn .. d .. bot_piece_names[piece_names[self.queue[i]]]
+    _nextn = _nextn .. d .. BOT_PIECE_NAMES[PIECE_NAMES[self.queue[i]]]
     d = delimiter
   end
   return _nextn
@@ -71,7 +71,7 @@ end
 function Preview:peakString(n)
   local _nextn = ''
   for i = 1, n do
-    _nextn = _nextn .. piece_names[self.queue[i]]
+    _nextn = _nextn .. PIECE_NAMES[self.queue[i]]
   end
   return _nextn
 end

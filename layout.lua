@@ -28,7 +28,7 @@ end
 function Layout:initialize(state, lidx, lsx, lsy)
   -- State reference
   self.state = state
-  self.is_human = (lidx == human_index) -- (TODO) use unique identifier
+  self.is_human = (lidx == HUMAN_INDEX) -- (TODO) use unique identifier
   self.lstartx, self.lstarty = lsx, lsy
 
   -- Layout Env
@@ -38,7 +38,7 @@ function Layout:initialize(state, lidx, lsx, lsy)
   self.preview = Preview:new(self.lstartx, self.lstarty)
   self.stat = Stat:new(state, self)
   self.field = Field:new(self, self.lstartx, self.lstarty)
-  self.piece = Piece:new(state, self, piece_names[self.preview:next()])
+  self.piece = Piece:new(state, self, PIECE_NAMES[self.preview:next()])
 
   -- add to layout collections
   -- Use field id as layout id, unique anyways
@@ -65,7 +65,7 @@ function Layout:draw()
   self.preview:draw()
   self.field:draw()
   self.piece:draw()
-  if session_mode == 'analysis' then
+  if SESSION_MODE == 'analysis' then
     self.stat:draw()
   end
 end

@@ -25,7 +25,7 @@ require 'layout'
 
 function love.load()
   -- Main Env
-  global_font = love.graphics.newFont(default_font, default_font_size)
+  global_font = love.graphics.newFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
   love.graphics.setFont(global_font)
 
   focused = true
@@ -34,8 +34,8 @@ function love.load()
   input = Input()
 
   -- Bot Loader
-  if bot_play then bot_loader.start() end
-  if pcfinder_play then pc_finder.start() end
+  if BOT_PLAY then bot_loader.start() end
+  if PCFINDER_PLAY then pc_finder.start() end
 
   -- Memory Debug
   input:bind('space', function()
@@ -56,8 +56,8 @@ function love.update(dt)
   if focused then game:update(dt) end
 
   -- Bot update
-  if bot_play then bot_loader.update() end
-  if pcfinder_play then pc_finder.update() end
+  if BOT_PLAY then bot_loader.update() end
+  if PCFINDER_PLAY then pc_finder.update() end
 end
 
 function love.draw()
@@ -112,8 +112,8 @@ end
 
 function love.run()
   -- Random Seed (optional)
-  -- math.randomseed(default_seed or os.time())
-  -- if love.math then love.math.setRandomSeed(default_seed or os.time()) end
+  -- math.randomseed(DEFAULT_SEED or os.time())
+  -- if love.math then love.math.setRandomSeed(DEFAULT_SEED or os.time()) end
 
   if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
@@ -162,8 +162,8 @@ function love.run()
 end
 
 function love.quit()
-  if bot_play then bot_loader.terminate() end
-  if pcfinder_play then
+  if BOT_PLAY then bot_loader.terminate() end
+  if PCFINDER_PLAY then
     pc_finder.terminate()
     -- pc_finder.shutdown()
   end

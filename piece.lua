@@ -30,16 +30,16 @@ function Piece:initialize(state, layout, name, rot, x, y)
 
   -- Piece Env
   self.name = name -- TODO copy constructor, index, name
-  self.rot = rot or default_rot -- rot 0, 1, 2, 3
+  self.rot = rot or DEFAULT_ROT -- rot 0, 1, 2, 3
   self.x = x or self:getSpawnX()
   self.y = y or self:getSpawnY()
   self.hold_used = false
   self.last_valid_move = 'null'
-  self.softdropping = false -- not used
+  -- self.softdropping = false -- not used
 
-  self.softdrop_delay = drop_coefficient * frame_time / softdrop_constant
-  self.shift_delay = das * frame_time
-  self.arr_delay = arr * frame_time
+  self.softdrop_delay = DROP_COEFFICIENT * FRAME_TIME / SOFTDROP_CONSTANT
+  self.shift_delay = DAS * FRAME_TIME
+  self.arr_delay = ARR * FRAME_TIME
 
   self.last_left_shift = '0'
   self.last_right_shift = '0'
@@ -48,13 +48,13 @@ function Piece:initialize(state, layout, name, rot, x, y)
   self.shift_direction = 0
 
   self.lock_delay = 0
-  self.lock_delay_maximum = lock_delay_limit * frame_time
+  self.lock_delay_maximum = LOCK_DELAY_LIMIT * FRAME_TIME
   self.force_lock_delay = 0
-  self.force_lock_delay_maximum = force_lock_delay_limit * frame_time
+  self.force_lock_delay_maximum = FORCE_LOCK_DELAY_LIMIT * FRAME_TIME
 
   self.reset_done = false
-  self.waiting_pcfinder = pcfinder_play
-  self.waiting_bot = bot_play
+  self.waiting_pcfinder = PCFINDER_PLAY
+  self.waiting_bot = BOT_PLAY
 
   -- Stat register
   self.piece_count = 0
@@ -67,7 +67,7 @@ function Piece:initialize(state, layout, name, rot, x, y)
   self.use_bot_sequence = false
   self.pc_sequence = {}
   self.bot_sequence = {}
-  self.bot_move_delay = bot_move_delay * frame_time
+  self.bot_move_delay = BOT_MOVE_DELAY * FRAME_TIME
   self.bot_last_move = 0
   self.pcFinderThinkFinished = false
 
@@ -76,7 +76,7 @@ function Piece:initialize(state, layout, name, rot, x, y)
 
   -- Passive
   -- Auto Drop
-  self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function() -- TODO handle zero
+  self.timer:every('autodrop', DROP_COEFFICIENT * FRAME_TIME / GRAVITY, function() -- TODO handle zero
     if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
       self.y = self.y - 1
       -- self.timer:tween(0.5, self, {y = self.y - 1}, 'in-out-expo') -- non-blocking animation
@@ -92,7 +92,7 @@ function Piece:update(dt)
 
   -- A: is match, B: bot play, C: is human
   -- (C)(A + B') or B'C + AC
-  if self.is_human and (session_mode == 'match' or not self.state.bot_play) then
+  if self.is_human and (SESSION_MODE == 'match' or not self.state.bot_play) then
     if input:pressed('harddrop') then self:harddrop() end
     -- if input:pressed('softdrop') then self:onSoftdropStart() end
     -- if input:released('softdrop') then self:onSoftdropEnd() end
@@ -120,7 +120,7 @@ function Piece:update(dt)
       self.right_shift = '0'
     end
     -- Encoded
-    self.shift_direction = piece_shift[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
+    self.shift_direction = PIECE_SHIFT[self.last_left_shift .. self.last_right_shift .. self.left_shift .. self.right_shift]
     if input:down('move_left', self.arr_delay, self.shift_delay) and self.shift_direction == -1 then self:moveLeft() end
     if input:down('move_right', self.arr_delay, self.shift_delay) and self.shift_direction == 1 then self:moveRight() end
 
@@ -134,10 +134,10 @@ function Piece:update(dt)
   -- Bot logic
   if self.layout.field.field_updated and self.reset_done then
     -- (B)(A' + C')
-    if self.state.bot_play and (not self.is_human or session_mode == 'analysis') then
+    if self.state.bot_play and (not self.is_human or SESSION_MODE == 'analysis') then
       self:updateBot()
     end
-    if self.state.pcfinder_play and (not self.is_human or session_mode == 'analysis') then
+    if self.state.pcfinder_play and (not self.is_human or SESSION_MODE == 'analysis') then
       self:updatePCFinder()
     end
     self.layout.field.field_updated = false
@@ -169,7 +169,7 @@ function Piece:update(dt)
 
   if self.use_bot_sequence and #self.bot_sequence > 0 and not self.waiting_bot then
     local elapsed = love.timer.getTime() - self.bot_last_move
-    if elapsed > frame_time then
+    if elapsed > FRAME_TIME then
       if self:safeBotMove(self.bot_sequence) or elapsed > self.bot_move_delay then
         local valid = self:processBotSequence()
         if not valid then self.use_bot_sequence = false end
@@ -186,9 +186,9 @@ function Piece:update(dt)
       self.piece_count = self.piece_count + 1
 
       if self.name == 'T' and self.last_valid_move == 'rotation' then
-        if spin_mode == 'tspinonly' then
+        if SPIN_MODE == 'tspinonly' then
           self:setTSpin()
-        elseif spin_mode == 'allspin' then
+        elseif SPIN_MODE == 'allspin' then
           self:setAllSpin()
         end
       else
@@ -199,7 +199,7 @@ function Piece:update(dt)
       self.layout.field:addPiece(self.name, self.rot, self.x, self.y)
 
       -- Respawn new piece
-      self:reset(piece_names[self.layout.preview:next()], false)
+      self:reset(PIECE_NAMES[self.layout.preview:next()], false)
     else
       self.lock_delay = self.lock_delay + dt
       self.force_lock_delay = self.force_lock_delay + dt
@@ -222,30 +222,30 @@ function Piece:draw()
   while not self:collide(nil, y2 - 1, nil, nil) do y2 = y2 - 1 end
 
   if y2 ~= self.y then
-    for i = 1, num_piece_blocks do
-      local x = piece_xs[self.name][self.rot + 1][i]
-      local y = piece_ys[self.name][self.rot + 1][i]
-      love.graphics.setColor(block_colors[self.name])
+    for i = 1, NUM_PIECE_BLOCKS do
+      local x = PIECE_XS[self.name][self.rot + 1][i]
+      local y = PIECE_YS[self.name][self.rot + 1][i]
+      love.graphics.setColor(BLOCK_COLORS[self.name])
       love.graphics.setLineWidth(3)
       love.graphics.rectangle('line',
-                              self.layout.field.fstartx + (self.x + x - 1) * grid_size + 1, self.layout.field.fstarty - (y2 - y) * grid_size + 1,
-                              grid_size - 2, grid_size - 2)
+                              self.layout.field.fstartx + (self.x + x - 1) * GRID_SIZE + 1, self.layout.field.fstarty - (y2 - y) * GRID_SIZE + 1,
+                              GRID_SIZE - 2, GRID_SIZE - 2)
     end
     love.graphics.setLineWidth(1) -- reset line width TODO better way to resolve this
   end
 
   -- Piece
-  for i = 1, num_piece_blocks do
-    local x = piece_xs[self.name][self.rot + 1][i]
-    local y = piece_ys[self.name][self.rot + 1][i]
-    love.graphics.setColor(block_colors[self.name])
+  for i = 1, NUM_PIECE_BLOCKS do
+    local x = PIECE_XS[self.name][self.rot + 1][i]
+    local y = PIECE_YS[self.name][self.rot + 1][i]
+    love.graphics.setColor(BLOCK_COLORS[self.name])
     love.graphics.rectangle('fill',
-                            self.layout.field.fstartx + (self.x + x - 1) * grid_size, self.layout.field.fstarty - (self.y - y) * grid_size,
-                            grid_size, grid_size)
-    love.graphics.setColor(grid_color)
+                            self.layout.field.fstartx + (self.x + x - 1) * GRID_SIZE, self.layout.field.fstarty - (self.y - y) * GRID_SIZE,
+                            GRID_SIZE, GRID_SIZE)
+    love.graphics.setColor(GRID_COLOR)
     love.graphics.rectangle('line',
-                            self.layout.field.fstartx + (self.x + x - 1) * grid_size, self.layout.field.fstarty - (self.y - y) * grid_size,
-                            grid_size, grid_size)
+                            self.layout.field.fstartx + (self.x + x - 1) * GRID_SIZE, self.layout.field.fstarty - (self.y - y) * GRID_SIZE,
+                            GRID_SIZE, GRID_SIZE)
   end
 end
 
@@ -254,11 +254,11 @@ function Piece:destroy()
 end
 
 function Piece:getSpawnX()
-  return 1 + math.floor((h_grids - piece_widths[self.name][self.rot + 1]) / 2)
+  return 1 + math.floor((H_GRIDS - PIECE_WIDTHS[self.name][self.rot + 1]) / 2)
 end
 
 function Piece:getSpawnY()
-  return v_grids + piece_max_heights[self.name][self.rot + 1]
+  return V_GRIDS + PIECE_MAX_HEIGHTS[self.name][self.rot + 1]
 end
 
 function Piece:collide(x, y, rot, field)
@@ -267,10 +267,10 @@ function Piece:collide(x, y, rot, field)
   local rot = rot or self.rot
   local field = field or self.layout.field
 
-  for i = 1, num_piece_blocks do
-    local x2 = x + piece_xs[self.name][rot + 1][i]
-    local y2 = y - piece_ys[self.name][rot + 1][i]
-    -- if x2 > h_grids or y2 < 1 then return true end
+  for i = 1, NUM_PIECE_BLOCKS do
+    local x2 = x + PIECE_XS[self.name][rot + 1][i]
+    local y2 = y - PIECE_YS[self.name][rot + 1][i]
+    -- if x2 > H_GRIDS or y2 < 1 then return true end
     if field:getBlock(x2, y2) ~= 0 then return true end
   end
   return false
@@ -298,7 +298,7 @@ end
 --   self.timer:cancel('autodrop')
 --   self.softdropping = true
 --
---   self.timer:every('softdrop', drop_coefficient * frame_time / softdrop, function()
+--   self.timer:every('softdrop', DROP_COEFFICIENT * FRAME_TIME / softdrop, function()
 --     if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
 --       self.y = self.y - 1
 --     end
@@ -311,7 +311,7 @@ end
 --   self.softdropping = false
 --
 --   if not self.state.bot_play then
---     self.timer:every('autodrop', drop_coefficient * frame_time / gravity, function()
+--     self.timer:every('autodrop', DROP_COEFFICIENT * FRAME_TIME / GRAVITY, function()
 --       if not self:collide(self.x, self.y - 1, self.rot, self.layout.field) then
 --         self.y = self.y - 1
 --       end
@@ -350,7 +350,7 @@ function Piece:rotateRight()
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
-    local kw = self.name == 'I' and wallkick_I_right or wallkick_normal_right
+    local kw = self.name == 'I' and WALLKICK_I_RIGHT or WALLKICK_NORMAL_RIGHT
     for i = 1, #kw[self.rot + 1] do
       local x2 = kw[self.rot + 1][i][1]
       local y2 = kw[self.rot + 1][i][2]
@@ -373,7 +373,7 @@ function Piece:rotateLeft()
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
-    local kw = self.name == 'I' and wallkick_I_left or wallkick_normal_left
+    local kw = self.name == 'I' and WALLKICK_I_LEFT or WALLKICK_NORMAL_LEFT
     for i = 1, #kw[self.rot + 1] do
       local x2 = kw[self.rot + 1][i][1]
       local y2 = kw[self.rot + 1][i][2]
@@ -396,7 +396,7 @@ function Piece:rotate180()
   if not self:collide(nil, nil, rot, nil) then
     self.rot = rot
   else
-    local kw = self.name == 'I' and wallkick_I_180 or wallkick_normal_180
+    local kw = self.name == 'I' and WALLKICK_I_180 or WALLKICK_NORMAL_180
     for i = 1, #kw[self.rot + 1] do
       local x2 = kw[self.rot + 1][i][1]
       local y2 = kw[self.rot + 1][i][2]
@@ -415,12 +415,12 @@ function Piece:rotate180()
 end
 
 function Piece:holdPiece()
-  if hold_allowed and not self.hold_used then
+  if HOLD_ALLOWED and not self.hold_used then
     local _to_hold = self.name
     if self.layout.hold.name ~= nil then
       self:reset(self.layout.hold.name, true)
     else
-      self:reset(piece_names[self.layout.preview:next()], true)
+      self:reset(PIECE_NAMES[self.layout.preview:next()], true)
     end
     self.layout.hold.name = _to_hold
 
@@ -431,9 +431,9 @@ end
 function Piece:updateBot()
   self.thinkFinished = false
   bot_loader.updateBot(
-    self.layout.preview:peakBotString(num_bot_preview),
-    bot_piece_names[self.name],
-    bot_piece_names[self.layout.hold:getBotName()],
+    self.layout.preview:peakBotString(NUM_BOT_PREVIEW),
+    BOT_PIECE_NAMES[self.name],
+    BOT_PIECE_NAMES[self.layout.hold:getBotName()],
     self.layout.field:convertBotStr(),
     self.layout.field.combo_count + 1,
     self.layout.field.b2b_count,
@@ -442,7 +442,7 @@ function Piece:updateBot()
   bot_loader.think(function()
     self.thinkFinished = true
   end)
-  self.timer:after(think_duration, function()
+  self.timer:after(THINK_DURATION, function()
     bot_loader.terminate()
   end)
 end
@@ -454,20 +454,20 @@ function Piece:updatePCFinder()
       self.pcFinderThinkFinished = true
     end,
     self.layout.field:convertPCFinderStr(),
-    self.name .. self.layout.preview:peakString(num_pcfinder_preview),
+    self.name .. self.layout.preview:peakString(NUM_PCFINDER_PREVIEW),
     self.layout.hold:getPCFinderName(),
     self.layout.field:getPCHeight(),
     self.layout.field.combo_count + 1,
     self.layout.field.b2b_count
     )
-  self.timer:after(pcfinder_think_duration, function()
+  self.timer:after(PCFINDER_THINK_DURATION, function()
     pc_finder.terminate()
   end)
 end
 
 function Piece:reset(name, use_hold)
   self.name = name
-  self.rot = default_rot
+  self.rot = DEFAULT_ROT
   self.x = self:getSpawnX()
   self.y = self:getSpawnY()
   self.hold_used = false
@@ -480,8 +480,8 @@ function Piece:reset(name, use_hold)
   -- Update bot
   if not use_hold then
     self.reset_done = true
-    self.waiting_pcfinder = pcfinder_play
-    self.waiting_bot = bot_play
+    self.waiting_pcfinder = PCFINDER_PLAY
+    self.waiting_bot = BOT_PLAY
   end
 
   -- if self.state.bot_play and not use_hold then
@@ -511,7 +511,7 @@ function Piece:setTSpin()
 
   local count = 0
   for i = 1, #tx do
-    if self.layout.field:getBlock(self.x + tx[i], self.y - ty[i]) ~= empty_block_value then
+    if self.layout.field:getBlock(self.x + tx[i], self.y - ty[i]) ~= EMPTY_BLOCK_VALUE then
       count = count + 1
     end
   end
@@ -612,19 +612,19 @@ function Piece:preprocessPCSolution(solution)
     local sol = lume.split(self.pc_sequence[1], ',')
     table.remove(self.pc_sequence, 1) -- pop first item
 
-    local name = pcfinder_piece_names[tonumber(sol[1]) + 1]
+    local name = PCFINDER_PIECE_NAMES[tonumber(sol[1]) + 1]
     local x = tonumber(sol[2])
     local y = tonumber(sol[3])
     local rot = tonumber(sol[4])
     -- bot coord
-    x = x + pcfinder_offset[name][rot + 1][1]
-    y = y + pcfinder_offset[name][rot + 1][2]
+    x = x + PCFINDER_OFFSET[name][rot + 1][1]
+    y = y + PCFINDER_OFFSET[name][rot + 1][2]
 
     local path = bot_loader.findPath(
       self.layout.field:convertBotStr(),
-      bot_piece_names[name],
+      BOT_PIECE_NAMES[name],
       x,
-      v_grids - y,
+      V_GRIDS - y,
       self.class.getHorizontalFlip(rot),
       name ~= self.name
       )

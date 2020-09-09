@@ -3,11 +3,11 @@ local Session = Game:addState('Session')
 function Session:enteredState()
   -- Session Env
   self.paused = false
-  self.bot_play = bot_play
-  self.pcfinder_play = pcfinder_play
+  self.bot_play = BOT_PLAY
+  self.pcfinder_play = PCFINDER_PLAY
   self.session_status = SESSION_COUNTDOWN
   self.counting_down_text = nil
-  self.sstartx, self.sstarty = session_startx, session_starty
+  self.sstartx, self.sstarty = SESSION_STARTX, SESSION_STARTY
 
   -- timer
   self.previous_start_time = love.timer.getTime()
@@ -19,7 +19,7 @@ function Session:enteredState()
   input:bind('backspace', 'restart')
   input:bind('p', 'debug')
 
-  -- if not self.bot_play then
+  -- if not self.BOT_PLAY then
   -- Always bind, just react differently
   input:bind('w', 'harddrop')
   input:bind('a', 'move_left')
@@ -31,11 +31,11 @@ function Session:enteredState()
   input:bind('q', 'hold')
 
   -- Game Layouts
-  if session_mode == 'match' then
-    l1 = Layout:new(self, human_index, self.sstartx, self.sstarty)
-    l2 = Layout:new(self, human_index + 1, self.sstartx + 500, self.sstarty)
-  elseif session_mode == 'analysis' then
-    layout = Layout:new(self, human_index, self.sstartx, self.sstarty)
+  if SESSION_MODE == 'match' then
+    l1 = Layout:new(self, HUMAN_INDEX, self.sstartx, self.sstarty)
+    l2 = Layout:new(self, HUMAN_INDEX + 1, self.sstartx + 500, self.sstarty)
+  elseif SESSION_MODE == 'analysis' then
+    layout = Layout:new(self, HUMAN_INDEX, self.sstartx, self.sstarty)
   end
 end
 
@@ -88,24 +88,35 @@ function Session:update(dt)
 end
 
 function Session:draw()
-  love.graphics.setBackgroundColor(session_background_color)
+  love.graphics.setBackgroundColor(SESSION_BACKGROUND_COLOR)
 
   -- Session Draw
   love.graphics.setColor(1, 1, 1)
   love.graphics.print('FPS: ' .. love.timer.getFPS(), 0, 0)
-  love.graphics.print('Time: ' .. human_time(self.session_duration), 0, gh - default_font_size)
+  love.graphics.print('Time: ' .. human_time(self.session_duration), 0, GH - DEFAULT_FONT_SIZE)
 
   -- Layout Draw
   Layout:drawAll()
 
+  -- Paused
+  if self.paused then
+    love.graphics.setBackgroundColor(PAUSE_BACKGROUND_COLOR)
+    love.graphics.setColor(1, 1, 1)
+    local pause_text = 'Game Pause'
+    love.graphics.print(pause_text,
+                        GW / 2, GH / 2,
+                        0, 1, 1,
+                        global_font:getWidth(pause_text) / 2, global_font:getHeight(pause_text) / 2)
+  end
+
   -- Dead
   if self.session_status == SESSION_END then
-    local temp_font = love.graphics.newFont(default_font, 50)
+    local temp_font = love.graphics.newFont(DEFAULT_FONT, 50)
     love.graphics.setColor(1, 0, 0)
     love.graphics.setFont(temp_font)
     local gg_text = 'Game Over'
     love.graphics.print(gg_text,
-                        gw / 2, gh / 2,
+                        GW / 2, GH / 2,
                         0, 1, 1,
                         temp_font:getWidth(gg_text) / 2, temp_font:getHeight(gg_text) / 2)
     love.graphics.setFont(global_font)
@@ -113,11 +124,11 @@ function Session:draw()
 
   -- Count down
   if self.counting_down_text ~= nil then
-    local temp_font = love.graphics.newFont(default_font, 50)
+    local temp_font = love.graphics.newFont(DEFAULT_FONT, 50)
     love.graphics.setColor(1, 1, 0)
     love.graphics.setFont(temp_font)
     love.graphics.print(self.counting_down_text,
-                        gw / 2, gh / 2,
+                        GW / 2, GH / 2,
                         0, 1, 1,
                         temp_font:getWidth(self.counting_down_text) / 2, temp_font:getHeight(self.counting_down_text) / 2)
     love.graphics.setFont(global_font)

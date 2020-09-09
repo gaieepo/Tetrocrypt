@@ -1,8 +1,8 @@
 -- Window constant
-gw = 1000
-gh = 600
-scalex = 1
-scaley = 1
+GW = 1000
+GH = 600
+SCALEX = 1 -- not used
+SCALEY = 1 -- not used
 
 function love.conf(t)
   t.identity = nil  -- the name of the save directory (string)
@@ -11,8 +11,8 @@ function love.conf(t)
 
   t.window.title = 'Tetrocrypt'
   t.window.icon = nil
-  t.window.width = gw
-  t.window.height = gh
+  t.window.width = GW
+  t.window.height = GH
   t.window.resizable = false
   t.window.borderless = false
   t.window.vsync = false -- enable vertical sync (boolean)

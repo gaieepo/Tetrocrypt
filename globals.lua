@@ -1,15 +1,15 @@
 -- Constants --
-default_seed = 42 -- optional
-frame_time = 1/60 -- (second)
-gravity = 5
-softdrop_constant = 300 -- coefficient
-drop_coefficient = 256
-hold_allowed = true
-num_preview = 6
-default_font = 'firacode_retina.ttf'
-default_font_size = 20
-line_clear_delay = 1 -- (frame)
-spin_mode = 'tspinonly' -- disable / tspinonly / allspin
+DEFAULT_SEED = 42 -- optional
+FRAME_TIME = 1/60 -- (second)
+GRAVITY = 5
+SOFTDROP_CONSTANT = 300 -- coefficient
+DROP_COEFFICIENT = 256
+HOLD_ALLOWED = true
+NUM_PREVIEW = 6
+DEFAULT_FONT = 'firacode_retina.ttf'
+DEFAULT_FONT_SIZE = 20
+LINE_CLEAR_DELAY = 1 -- (frame)
+SPIN_MODE = 'tspinonly' -- disable / tspinonly / allspin
 
 SESSION_NORMAL = 1
 SESSION_COUNTDOWN = 2
@@ -17,35 +17,35 @@ SESSION_END = 4
 GAME_NORMAL = 8
 GAME_WIN = 16
 GAME_LOSE = 32
-session_mode = 'analysis' -- analysis / match
-game_mode = 'infinite' -- infinite / sprint
-sprint_lines = 40
-human_index = 1
-num_players = 2
+SESSION_MODE = 'analysis' -- analysis / match
+GAME_MODE = 'infinite' -- infinite / sprint
+SPRINT_LINES = 40
+HUMAN_INDEX = 1
+NUM_PLAYERS = 2 -- not used
 
 -- Garbage --
-pc_garbage_bonus = 7
-base_garbage_table = {0, 1, 2, 4}
-tspin_garbage_table = {2, 4, 6}
-default_b2b_bonus_coeff = 1
-default_b2b_bonus_log = 0.8
+PC_GARBAGE_BONUS = 7
+BASE_GARBAGE_TABLE = {0, 1, 2, 4}
+TSPIN_GARBAGE_TABLE = {2, 4, 6}
+DEFAULT_B2B_BONUS_COEFF = 1
+DEFAULT_B2B_BONUS_LOG = 0.8
 
 -- Bot & PC Finder --
-bot_play = true
-pcfinder_play = true
-bot_move_delay = 1 -- (frame)
+BOT_PLAY = true
+PCFINDER_PLAY = true
+BOT_MOVE_DELAY = 1 -- (frame)
 
-num_bot_preview = 14
-think_duration = 0.1
-bot_holdallowed = true
-bot_allspin = false
-bot_tsdonly = false
-bot_searchwidth = 1000 -- 1000 optimal
+NUM_BOT_PREVIEW = 14
+THINK_DURATION = 0.1
+BOT_HOLDALLOWED = true
+BOT_ALLSPIN = false
+BOT_TSDONLY = false
+BOT_SEARCHWIDTH = 1000 -- 1000 optimal
 
-num_pcfinder_preview = 14
-pcfinder_think_duration = 0.1
+NUM_PCFINDER_PREVIEW = 14
+PCFINDER_THINK_DURATION = 0.1
 
-bot_params = {
+BOT_PARAMS = {
   -- miny_factor, hole, open_hole, v_transitions, tspin3,
   -- clear_efficient, upcomeAtt, h_factor, hole_dis_factor2, hole_dis, // flat_factor,
   -- hole_dis_factor, tspin, hole_T, hole_I, clear_useless_factor, // ready_combo,
@@ -124,10 +124,10 @@ bot_params = {
 }
 
 -- Colors --
-session_background_color = { 10/255,  10/255,  10/255}
-pause_background_color   = {  0/255,   0/255,   0/255}
-grid_color               = {100/255, 100/255, 100/255}
-block_colors = {
+SESSION_BACKGROUND_COLOR = { 10/255,  10/255,  10/255}
+PAUSE_BACKGROUND_COLOR   = {100/255, 100/255, 100/255}
+GRID_COLOR               = {100/255, 100/255, 100/255}
+BLOCK_COLORS = {
   ['E'] = { 50/255,  50/255,  50/255},
   ['B'] = {200/255, 200/255, 200/255},
   ['S'] = {  0/255, 240/255,   0/255},
@@ -138,7 +138,7 @@ block_colors = {
   ['O'] = {240/255, 240/255,   0/255},
   ['I'] = {  0/255, 240/255, 240/255},
 }
-block_alpha_colors = {
+BLOCK_ALPHA_COLORS = {
   ['E'] = { 50/255,  50/255,  50/255, 0.4},
   ['B'] = {200/255, 200/255, 200/255, 0.4},
   ['S'] = {  0/255, 240/255,   0/255, 0.4},
@@ -149,54 +149,54 @@ block_alpha_colors = {
   ['O'] = {240/255, 240/255,   0/255, 0.4},
   ['I'] = {  0/255, 240/255, 240/255, 0.4},
 }
+LOCK_COLOR = 'colored' -- single / colored
 
 -- Position --
-session_startx = 0 -- game session positioning, include field, piece, stats, preview and hold (pixel)
-session_starty = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+SESSION_STARTX = 0 -- game session positioning, include field, piece, stats, preview and hold (pixel)
+SESSION_STARTY = 20 -- game session positioning, include field, piece, stats, preview and hold (pixel)
 
 -- Grid
-grid_size = 23 -- (pixel)
-grid_size_mini = 15 -- (pixel)
-h_grids = 10
-v_grids = 20
-x_grids = 20
-display_height = 24
+GRID_SIZE = 23 -- (pixel)
+GRID_SIZE_MINI = 15 -- (pixel) not used
+H_GRIDS = 10
+V_GRIDS = 20
+X_GRIDS = 20
+DISPLAY_HEIGHT = 24
 
 -- Hold
-hold_sx_offset = 50 -- (pixel)
-hold_sy_offset = 20 -- (pixel)
+HOLD_SX_OFFSET = 50 -- (pixel)
+HOLD_SY_OFFSET = 20 -- (pixel)
 
 -- Preview
-num_bags = 4
-base_bag = {1, 2, 3, 4, 5, 6, 7} -- {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
-preview_sx_offset = 400 -- (pixel)
-preview_sy_offset = 0 -- (pixel)
-y_separation = 70
+NUM_BAGS = 4
+BASE_BAG = {1, 2, 3, 4, 5, 6, 7} -- {'S', 'Z', 'L', 'J', 'T', 'O', 'I'}
+PREVIEW_SX_OFFSET = 400 -- (pixel)
+PREVIEW_SY_OFFSET = 0 -- (pixel)
+Y_SEPARATION = 70
 
 -- Field
-field_sx_offset = 150 -- (pixel)
-field_sy_offset = 550 -- (pixel)
-garbage_block_value = 10
-empty_block_value = 0
-lock_color = 'colored' -- single / colored
-dig_mode = false
-dig_delay = 1
+FIELD_SX_OFFSET = 150 -- (pixel)
+FIELD_SY_OFFSET = 550 -- (pixel)
+GARBAGE_BLOCK_VALUE = 10
+EMPTY_BLOCK_VALUE = 0
+DIG_MODE = false
+DIG_DELAY = 1
 
 -- Stat
-stat_sx_offset = 550
-stat_sy_offset = 0
+STAT_SX_OFFSET = 550
+STAT_SY_OFFSET = 0
 
 -- Piece
-left_direction = -1
-right_direction = 1
-lock_delay_limit = 30 -- (frame)
-force_lock_delay_limit = 500 -- (frame)
-das = 7 -- (frame)
-arr = 0 -- (frame)
-num_piece_blocks = 4
-default_rot = 0
-piece_names = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'} -- baseline
-bot_piece_names = {
+LEFT_DIRECTION = -1 -- not used
+RIGHT_DIRECTION = 1 -- not used
+LOCK_DELAY_LIMIT = 30 -- (frame)
+FORCE_LOCK_DELAY_LIMIT = 500 -- (frame)
+DAS = 7 -- (frame)
+ARR = 0 -- (frame)
+NUM_PIECE_BLOCKS = 4
+DEFAULT_ROT = 0
+PIECE_NAMES = {'S', 'Z', 'L', 'J', 'T', 'O', 'I'} -- baseline
+BOT_PIECE_NAMES = {
   ['S'] = 'Z',
   ['Z'] = 'S',
   ['L'] = 'J',
@@ -206,8 +206,8 @@ bot_piece_names = {
   ['I'] = 'I',
   [' '] = ' ',
 }
-pcfinder_piece_names = {'T', 'I', 'L', 'J', 'S', 'Z', 'O'}
-piece_ids = {
+PCFINDER_PIECE_NAMES = {'T', 'I', 'L', 'J', 'S', 'Z', 'O'}
+PIECE_IDS = {
   ['S'] = 1,
   ['Z'] = 2,
   ['L'] = 3,
@@ -216,7 +216,7 @@ piece_ids = {
   ['O'] = 6,
   ['I'] = 7,
 }
-piece_xs = {
+PIECE_XS = {
   ['S'] = {{2, 1, 1, 0}, {2, 2, 1, 1}, {0, 1, 1, 2}, {0, 0, 1, 1}},
   ['Z'] = {{0, 1, 1, 2}, {2, 2, 1, 1}, {2, 1, 1, 0}, {0, 0, 1, 1}},
   ['L'] = {{2, 2, 1, 0}, {2, 1, 1, 1}, {0, 0, 1, 2}, {0, 1, 1, 1}},
@@ -225,7 +225,7 @@ piece_xs = {
   ['O'] = {{0, 1, 1, 0}, {1, 1, 0, 0}, {1, 0, 0, 1}, {0, 0, 1, 1}},
   ['I'] = {{0, 1, 2, 3}, {2, 2, 2, 2}, {3, 2, 1, 0}, {1, 1, 1, 1}},
 }
-piece_ys = {
+PIECE_YS = {
   ['S'] = {{0, 0, 1, 1}, {2, 1, 1, 0}, {2, 2, 1, 1}, {0, 1, 1, 2}},
   ['Z'] = {{0, 0, 1, 1}, {0, 1, 1, 2}, {2, 2, 1, 1}, {2, 1, 1, 0}},
   ['L'] = {{0, 1, 1, 1}, {2, 2, 1, 0}, {2, 1, 1, 1}, {0, 0, 1, 2}},
@@ -234,7 +234,7 @@ piece_ys = {
   ['O'] = {{0, 0, 1, 1}, {0, 1, 1, 0}, {1, 1, 0, 0}, {1, 0, 0, 1}},
   ['I'] = {{1, 1, 1, 1}, {0, 1, 2, 3}, {2, 2, 2, 2}, {3, 2, 1, 0}},
 }
-pcfinder_offset = {
+PCFINDER_OFFSET = {
   ['S'] = {{-1, 1}, {-1, 1}, {-1, 1}, {-1, 1}},
   ['Z'] = {{-1, 1}, {-1, 1}, {-1, 1}, {-1, 1}},
   ['L'] = {{-1, 1}, {-1, 1}, {-1, 1}, {-1, 1}},
@@ -243,7 +243,7 @@ pcfinder_offset = {
   ['O'] = {{-1, 1}, {-1, 1}, {-1, 1}, {-1, 1}},
   ['I'] = {{-1, 1}, {-2, 1}, {-2, 2}, {-1, 2}},
 }
-piece_widths = {
+PIECE_WIDTHS = {
   ['S'] = {3, 2, 3, 2},
   ['Z'] = {3, 2, 3, 2},
   ['L'] = {3, 2, 3, 2},
@@ -252,7 +252,7 @@ piece_widths = {
   ['O'] = {2, 2, 2, 2},
   ['I'] = {4, 1, 4, 1},
 }
-piece_heights = {
+PIECE_HEIGHTS = {
   ['S'] = {2, 3, 2, 3},
   ['Z'] = {2, 3, 2, 3},
   ['L'] = {2, 3, 2, 3},
@@ -261,7 +261,7 @@ piece_heights = {
   ['O'] = {2, 2, 2, 2},
   ['I'] = {1, 4, 1, 4},
 }
-piece_max_heights = {
+PIECE_MAX_HEIGHTS = {
   ['S'] = {2, 3, 2, 3},
   ['Z'] = {2, 3, 2, 3},
   ['L'] = {2, 3, 2, 3},
@@ -271,49 +271,49 @@ piece_max_heights = {
   ['I'] = {2, 4, 2, 4},
 }
 
-wallkick_normal_left = {
+WALLKICK_NORMAL_LEFT = {
   {{ 1,  0}, { 1, -1}, { 0,  2}, { 1,  2}},  -- 0 >> 3
   {{ 1,  0}, { 1,  1}, { 0, -2}, { 1, -2}},  -- 1 >> 0
   {{-1,  0}, {-1, -1}, { 0,  2}, {-1,  2}},  -- 2 >> 1
   {{-1,  0}, {-1,  1}, { 0, -2}, {-1, -2}},  -- 3 >> 2
 }
 
-wallkick_normal_right = {
+WALLKICK_NORMAL_RIGHT = {
   {{-1,  0}, {-1, -1}, { 0,  2}, {-1,  2}},  -- 0 >> 1
   {{ 1,  0}, { 1,  1}, { 0, -2}, { 1, -2}},  -- 1 >> 2
   {{ 1,  0}, { 1, -1}, { 0,  2}, { 1,  2}},  -- 2 >> 3
   {{-1,  0}, {-1,  1}, { 0, -2}, {-1, -2}},  -- 3 >> 0
 }
 
-wallkick_I_left = {
+WALLKICK_I_LEFT = {
   {{-1,  0}, { 2,  0}, {-1, -2}, { 2,  1}},  -- 0 >> 3
   {{ 2,  0}, {-1,  0}, { 2, -1}, {-1,  2}},  -- 1 >> 0
   {{ 1,  0}, {-2,  0}, { 1,  2}, {-2, -1}},  -- 2 >> 1
   {{-2,  0}, { 1,  0}, {-2,  1}, { 1, -2}},  -- 3 >> 2
 }
 
-wallkick_I_right = {
+WALLKICK_I_RIGHT = {
   {{-2,  0}, { 1,  0}, {-2,  1}, { 1, -2}},  -- 0 >> 1
   {{-1,  0}, { 2,  0}, {-1, -2}, { 2,  1}},  -- 1 >> 2
   {{ 2,  0}, {-1,  0}, { 2, -1}, {-1,  2}},  -- 2 >> 3
   {{ 1,  0}, {-2,  0}, { 1,  2}, {-2, -1}},  -- 3 >> 0
 }
 
-wallkick_normal_180 = {
+WALLKICK_NORMAL_180 = {
   {{ 1,  0}, { 2,  0}, { 1,  1}, { 2,  1}, {-1,  0}, {-2,  0}, {-1,  1}, {-2,  1}, { 0, -1}, { 3,  0}, {-3,  0}},  -- 0 >> 2
   {{ 0,  1}, { 0,  2}, {-1,  1}, {-1,  2}, { 0, -1}, { 0, -2}, {-1, -1}, {-1, -2}, { 1,  0}, { 0,  3}, { 0, -3}},  -- 1 >> 3
   {{-1,  0}, {-2,  0}, {-1, -1}, {-2, -1}, { 1,  0}, { 2,  0}, { 1, -1}, { 2, -1}, { 0,  1}, {-3,  0}, { 3,  0}},  -- 2 >> 0
   {{ 0,  1}, { 0,  2}, { 1,  1}, { 1,  2}, { 0, -1}, { 0, -2}, { 1, -1}, { 1, -2}, {-1,  0}, { 0,  3}, { 0, -3}},  -- 3 >> 1
 }
 
-wallkick_I_180 = {
+WALLKICK_I_180 = {
   {{-1,  0}, {-2,  0}, { 1,  0}, { 2,  0}, { 0,  1}},  -- 0 >> 2
   {{ 0,  1}, { 0,  2}, { 0, -1}, { 0, -2}, {-1,  0}},  -- 1 >> 3
   {{ 1,  0}, { 2,  0}, {-1,  0}, {-2,  0}, { 0, -1}},  -- 2 >> 0
   {{ 0,  1}, { 0,  2}, { 0, -1}, { 0, -2}, { 1,  0}},  -- 3 >> 1
 }
 
-piece_shift = {
+PIECE_SHIFT = {
   ['1110'] = -1,
   ['1101'] =  1,
   ['1100'] =  0,
@@ -345,7 +345,7 @@ MOV_DROP  = 9
 MOV_HOLD  = 10
 MOV_SPIN2 = 11
 
--- piece_spinbonus_high_x = {
+-- PIECE_SPINBONUS_HIGH_X = {
 --   ['S'] = {{0, 2      }, {1, 2      }, {2, 0      }, {1, 0      }},
 --   ['Z'] = {{2, 1      }, {2, 1      }, {0, 2      }, {0, 1      }},
 --   ['L'] = {{1, 0      }, {2, 2      }, {1, 2      }, {0, 0      }},
@@ -354,7 +354,7 @@ MOV_SPIN2 = 11
 --   ['O'] = {{          }, {          }, {          }, {          }},
 --   ['I'] = {{1, 2, 2, 1}, {1, 3, 3, 1}, {1, 2, 2, 1}, {0, 2, 0, 2}},
 -- }
--- piece_spinbonus_high_y = {
+-- PIECE_SPINBONUS_HIGH_Y = {
 --   ['S'] = {{0, 1      }, {2, 0      }, {2, 1      }, {0, 2      }},
 --   ['Z'] = {{0, 1      }, {2, 0      }, {2, 1      }, {0, 2      }},
 --   ['L'] = {{0, 0      }, {1, 0      }, {2, 2      }, {1, 2      }},
@@ -363,7 +363,7 @@ MOV_SPIN2 = 11
 --   ['O'] = {{          }, {          }, {          }, {          }},
 --   ['I'] = {{0, 2, 2, 0}, {1, 2, 2, 1}, {1, 3, 1, 3}, {1, 2, 2, 1}},
 -- }
--- piece_spinbonus_low_x = {
+-- PIECE_SPINBONUS_LOW_X = {
 --   ['S'] = {{3, -1       }, {1, 2      }, {-1, 3       }, {1, 0      }},
 --   ['Z'] = {{-1, 3       }, {2, 1      }, {3, -1       }, {0, 1      }},
 --   ['L'] = {{2, 0        }, {0, 0      }, {0, 2        }, {2, 2      }},
@@ -372,7 +372,7 @@ MOV_SPIN2 = 11
 --   ['O'] = {{            }, {          }, {            }, {          }},
 --   ['I'] = {{-1, 4, -1, 4}, {2, 2, 2, 2}, {-1, 4, -1, 4}, {1, 1, 1, 1}},
 -- }
--- piece_spinbonus_low_y = {
+-- PIECE_SPINBONUS_LOW_Y = {
 --   ['S'] = {{0, 1        }, {-1, 3       }, {2, 1      }, {3, -1       }},
 --   ['Z'] = {{0, 1        }, {-1, 3       }, {2, 1      }, {3, -1       }},
 --   ['L'] = {{2, 2        }, {2, 0        }, {0, 0      }, {0, 3        }},  -- Caution: 0, 3
