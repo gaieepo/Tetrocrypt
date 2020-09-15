@@ -5,7 +5,7 @@ local loader = {}
 
 local function printf(f)
   local rows = lume.split(f, '|')
-  print('>>>>>')
+  log.info('>>>>>')
   for _, v in ipairs(rows) do
     if #v > 0 then
       local row = ''
@@ -14,10 +14,10 @@ local function printf(f)
           row = row .. (v:sub(i, i) == '0' and '_' or 'X')
         end
       end
-      print(row)
+      log.trace(row)
     end
   end
-  print('<<<<<')
+  log.info('<<<<<')
 end
 
 local loaded = ...
@@ -42,7 +42,7 @@ else
     local move = consumer:pop()
     if move then
       _move = move
-      -- print(move)
+      if DEBUG then log.trace(move) end
       thinkFinished()
     end
   end

@@ -8,6 +8,7 @@ Stateful = require 'libraries/stateful/stateful'
 Input = require 'libraries/boipushy/Input'
 Timer = require 'modules/TimerEx'
 class = require 'libraries/middleclass/middleclass'
+log = require 'libraries/log/log'
 bot_loader = require 'bot-loader'
 pc_finder = require 'pc-finder'
 
@@ -39,13 +40,13 @@ function love.load()
 
   -- Memory Debug
   input:bind('space', function()
-    print("Before collection: " .. collectgarbage("count") / 1024)
+    log.info("Before collection: " .. collectgarbage("count") / 1024)
     collectgarbage()
-    print("After collection: " .. collectgarbage("count") / 1024)
-    print("Object count: ")
+    log.info("After collection: " .. collectgarbage("count") / 1024)
+    log.info("Object count: ")
     local counts = type_count()
-    for k, v in pairs(counts) do print(k, v) end
-    print("-------------------------------------")
+    for k, v in pairs(counts) do log.info(k, v) end
+    log.info("-------------------------------------")
   end)
 
   game = Game:new()

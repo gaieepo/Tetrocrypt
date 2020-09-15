@@ -2,7 +2,7 @@ local pcfinder = require 'PCFinder'
 
 local function printf(f)
   for i = 1, #f, 10 do
-    print(f:sub(i, i + 9))
+    log.trace(f:sub(i, i + 9))
   end
 end
 
@@ -40,7 +40,7 @@ else
     local solution = consumer:pop()
     if solution then
       _solution = solution
-      -- print(solution)
+      if DEBUG then log.trace(solution) end
       thinkFinished()
     end
   end

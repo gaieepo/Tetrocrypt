@@ -88,7 +88,7 @@ function Piece:update(dt)
   Piece.super.update(self, dt) -- update timer
 
   -- Input handler
-  if input:pressed('debug') then self:adHocDebug() end
+  if input:pressed('debug') and DEBUG then self:adHocDebug() end
 
   -- A: is match, B: bot play, C: is human
   -- (C)(A + B') or B'C + AC
@@ -644,5 +644,5 @@ end
 
 function Piece:adHocDebug()
   fn.push(self.layout.field.incoming_garbage, love.math.random(1, 4))
-  print('Debug add random garbage: ', Inspect(self.layout.field.incoming_garbage))
+  log.debug('Debug add random garbage: ', Inspect(self.layout.field.incoming_garbage))
 end

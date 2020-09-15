@@ -1,4 +1,5 @@
 -- Constants --
+DEBUG = true
 DEFAULT_SEED = 42 -- optional
 FRAME_TIME = 1/60 -- (second)
 GRAVITY = 5
