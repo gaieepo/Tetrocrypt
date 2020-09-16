@@ -1,5 +1,5 @@
 local bot = require 'GaiAI'
-local lume = require 'libraries/lume/lume'
+local lume = require 'libs/lume'
 
 local loader = {}
 
