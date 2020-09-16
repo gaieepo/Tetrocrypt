@@ -1,14 +1,14 @@
 -- Debug
-Inspect = require 'libraries/inspect/inspect'
+Inspect = require 'libs/inspect'
 
 -- Libraries
-fn = require 'libraries/Moses/moses'
-lume = require 'libraries/lume/lume'
-Stateful = require 'libraries/stateful/stateful'
-Input = require 'libraries/boipushy/Input'
+fn = require 'libs/moses_min'
+lume = require 'libs/lume'
+Stateful = require 'libs/stateful'
+Input = require 'libs/Input'
 Timer = require 'modules/TimerEx'
-class = require 'libraries/middleclass/middleclass'
-log = require 'libraries/log/log'
+class = require 'libs/middleclass'
+log = require 'libs/log'
 bot_loader = require 'bot-loader'
 pc_finder = require 'pc-finder'
 

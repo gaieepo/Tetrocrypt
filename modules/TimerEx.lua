@@ -1,5 +1,5 @@
-local class = require 'libraries/middleclass/middleclass'
-local Timer = require 'libraries/hump/timer'
+local class = require 'libs/middleclass'
+local Timer = require 'libs/timer'
 
 local TimerEx = class('TimerEx')
 
