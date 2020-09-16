@@ -3,7 +3,6 @@
 
 resources/
 libraries/
-lua51/
 
 *.swp
 TODO*
