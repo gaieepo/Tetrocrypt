@@ -1,9 +1,9 @@
 CC=g++
 CFLAGS=-O3 -Wall -fPIC -shared -std=c++17 -undefined dynamic_lookup
-header_path=-I./lua51/include
+LDFLAGS=-I./lua51/include
 
 GaiAI.so: GaiAI.o Bot.o lastnodes.o tetris_ai.o genmove.o tetris_gem.o gamepool.o stuff.o
-	$(CC) $(CFLAGS) $(header_path) -o $@ $^
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 GaiAI.o: GaiAI.cpp
 	$(CC) $(CFLAGS) -c $^
@@ -30,5 +30,6 @@ stuff.o: stuff.cpp
 	$(CC) $(CFLAGS) -c $^
 
 clean:
-	rm -rf *.so
-	rm -rf *.dSYM
+	-rm  *.so
+	-rm  *.o
+	-rm -r *.dSYM
