@@ -173,7 +173,7 @@ function Field:draw()
           love.graphics.setColor(BLOCK_COLORS['B'])
         elseif LOCK_COLOR == 'colored' then
           love.graphics.setColor(fn.mapi(BLOCK_COLORS[PIECE_NAMES[self.board[i][j]]], function(v) return v * 0.8 end))
-        elseif LOCK_COLOR == 'single' then
+        elseif LOCK_COLOR == 'mono' then
           love.graphics.setColor(BLOCK_COLORS['B'])
         end
         love.graphics.rectangle('fill',

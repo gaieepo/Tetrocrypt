@@ -35,8 +35,8 @@ function love.load()
   input = Input()
 
   -- Bot Loader
-  if BOT_PLAY then bot_loader.start() end
-  if PCFINDER_PLAY then pc_finder.start() end
+  if BOT_PLAY or DEBUG then bot_loader.start() end
+  if PCFINDER_PLAY or DEBUG then pc_finder.start() end
 
   -- Memory Debug
   input:bind('space', function()
@@ -57,8 +57,8 @@ function love.update(dt)
   if focused then game:update(dt) end
 
   -- Bot update
-  if BOT_PLAY then bot_loader.update() end
-  if PCFINDER_PLAY then pc_finder.update() end
+  if BOT_PLAY or DEBUG then bot_loader.update() end
+  if PCFINDER_PLAY or DEBUG then pc_finder.update() end
 end
 
 function love.draw()

@@ -53,8 +53,8 @@ function Piece:initialize(state, layout, name, rot, x, y)
   self.force_lock_delay_maximum = FORCE_LOCK_DELAY_LIMIT * FRAME_TIME
 
   self.reset_done = false
-  self.waiting_pcfinder = PCFINDER_PLAY
-  self.waiting_bot = BOT_PLAY
+  self.waiting_pcfinder = state.pcfinder_play
+  self.waiting_bot = state.bot_play
 
   -- Stat register
   self.piece_count = 0
@@ -88,7 +88,7 @@ function Piece:update(dt)
   Piece.super.update(self, dt) -- update timer
 
   -- Input handler
-  if input:pressed('debug') and DEBUG then self:adHocDebug() end
+  if input:pressed('garbage') and DEBUG then self:adHocDebug() end
 
   -- A: is match, B: bot play, C: is human
   -- (C)(A + B') or B'C + AC
@@ -480,8 +480,8 @@ function Piece:reset(name, use_hold)
   -- Update bot
   if not use_hold then
     self.reset_done = true
-    self.waiting_pcfinder = PCFINDER_PLAY
-    self.waiting_bot = BOT_PLAY
+    self.waiting_pcfinder = self.state.pcfinder_play
+    self.waiting_bot = self.state.bot_play
   end
 
   -- if self.state.bot_play and not use_hold then

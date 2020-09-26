@@ -1,5 +1,5 @@
 -- Constants --
-DEBUG = true
+DEBUG = false
 DEFAULT_SEED = 42 -- optional
 FRAME_TIME = 1/60 -- (second)
 GRAVITY = 5
@@ -18,7 +18,7 @@ SESSION_END = 4
 GAME_NORMAL = 8
 GAME_WIN = 16
 GAME_LOSE = 32
-SESSION_MODE = 'analysis' -- analysis / match
+SESSION_MODE = 'match' -- analysis / match
 GAME_MODE = 'infinite' -- infinite / sprint
 SPRINT_LINES = 40
 HUMAN_INDEX = 1
@@ -34,7 +34,7 @@ DEFAULT_B2B_BONUS_LOG = 0.8
 -- Bot & PC Finder --
 BOT_PLAY = true
 PCFINDER_PLAY = true
-BOT_MOVE_DELAY = 1 -- (frame)
+BOT_MOVE_DELAY = 20 -- (frame)
 
 NUM_BOT_PREVIEW = 14
 THINK_DURATION = 0.1
@@ -150,7 +150,7 @@ BLOCK_ALPHA_COLORS = {
   ['O'] = {240/255, 240/255,   0/255, 0.4},
   ['I'] = {  0/255, 240/255, 240/255, 0.4},
 }
-LOCK_COLOR = 'colored' -- single / colored
+LOCK_COLOR = 'mono' -- mono / colored
 
 -- Position --
 SESSION_STARTX = 0 -- game session positioning, include field, piece, stats, preview and hold (pixel)

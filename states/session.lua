@@ -17,7 +17,8 @@ function Session:enteredState()
   -- Session State Input Handler
   input:bind('escape', 'pause')
   input:bind('backspace', 'restart')
-  input:bind('p', 'debug')
+  input:bind('g', 'garbage')
+  input:bind('o', 'auto')
 
   -- if not self.BOT_PLAY then
   -- Always bind, just react differently
@@ -44,6 +45,15 @@ function Session:update(dt)
   self.timer:update(dt)
 
   -- Session Env
+  if input:pressed('auto') and DEBUG then
+    self.bot_play = true
+    self.pcfinder_play = true
+  end
+  if input:released('auto') and DEBUG then
+    self.bot_play = false
+    self.pcfinder_play = false
+  end
+
   -- Count down
   if self.session_status == SESSION_COUNTDOWN and self.counting_down_text == nil then
     self.timer:after(1, function() self.session_status = SESSION_NORMAL end)
