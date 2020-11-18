@@ -26,6 +26,7 @@ function Piece:initialize(state, layout, name, rot, x, y)
   -- Entity reference
   self.state = state
   self.layout = layout
+  self.lindex = layout.lindex
   self.is_human = layout.is_human
 
   -- Piece Env
@@ -152,7 +153,14 @@ function Piece:update(dt)
   end
 
   if self.thinkFinished and not self.waiting_pcfinder then
-    local bot_move = bot_loader.getMove()
+    local bot_move
+
+    if SESSION_MODE == 'bot-match' then
+      bot_move = bot_loaders.getMove(self.lindex)
+    else
+      bot_move = bot_loader.getMove()
+    end
+
     local seq = fn.map(lume.split(lume.split(bot_move, '|')[1], ','), function(v )
       return tonumber(v)
     end)
@@ -430,21 +438,41 @@ end
 
 function Piece:updateBot()
   self.thinkFinished = false
-  bot_loader.updateBot(
-    self.layout.preview:peakBotString(NUM_BOT_PREVIEW),
-    BOT_PIECE_NAMES[self.name],
-    BOT_PIECE_NAMES[self.layout.hold:getBotName()],
-    self.layout.field:convertBotStr(),
-    self.layout.field.combo_count + 1,
-    self.layout.field.b2b_count,
-    0
-    )
-  bot_loader.think(function()
-    self.thinkFinished = true
-  end)
-  self.timer:after(THINK_DURATION, function()
-    bot_loader.terminate()
-  end)
+
+  if SESSION_MODE == 'bot-match' then
+    bot_loaders.updateBot(
+      self.lindex,
+      self.layout.preview:peakBotString(NUM_BOT_PREVIEW),
+      BOT_PIECE_NAMES[self.name],
+      BOT_PIECE_NAMES[self.layout.hold:getBotName()],
+      self.layout.field:convertBotStr(),
+      self.layout.field.combo_count + 1,
+      self.layout.field.b2b_count,
+      0
+      )
+    bot_loaders.think(self.lindex, function()
+      self.thinkFinished = true
+    end)
+    self.timer:after(THINK_DURATION, function()
+      bot_loaders.terminate(self.lindex)
+    end)
+  else
+    bot_loader.updateBot(
+      self.layout.preview:peakBotString(NUM_BOT_PREVIEW),
+      BOT_PIECE_NAMES[self.name],
+      BOT_PIECE_NAMES[self.layout.hold:getBotName()],
+      self.layout.field:convertBotStr(),
+      self.layout.field.combo_count + 1,
+      self.layout.field.b2b_count,
+      0
+      )
+    bot_loader.think(function()
+      self.thinkFinished = true
+    end)
+    self.timer:after(THINK_DURATION, function()
+      bot_loader.terminate()
+    end)
+  end
 end
 
 function Piece:updatePCFinder()

@@ -28,6 +28,7 @@ end
 function Layout:initialize(state, lidx, lsx, lsy)
   -- State reference
   self.state = state
+  self.lindex = lidx
   self.is_human = (lidx == HUMAN_INDEX) -- (TODO) use unique identifier
   self.lstartx, self.lstarty = lsx, lsy
 

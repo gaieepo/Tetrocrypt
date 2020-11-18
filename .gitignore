@@ -2,7 +2,7 @@
 .idea/
 
 resources/
-libraries/
+local_libraries/
 
 *.swp
 TODO*

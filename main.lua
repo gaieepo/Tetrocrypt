@@ -10,6 +10,7 @@ Timer = require 'modules/TimerEx'
 class = require 'libs/middleclass'
 log = require 'libs/log'
 bot_loader = require 'bot-loader'
+bot_loaders = require 'bot-loaders'
 pc_finder = require 'pc-finder'
 
 require 'globals'
@@ -35,8 +36,15 @@ function love.load()
   input = Input()
 
   -- Bot Loader
-  if BOT_PLAY or DEBUG then bot_loader.start() end
+  if BOT_PLAY or DEBUG then
+    if SESSION_MODE == 'bot-match' then
+      bot_loaders.start()
+    else
+      bot_loader.start()
+    end
+  end
   if PCFINDER_PLAY or DEBUG then pc_finder.start() end
+
 
   -- Memory Debug
   input:bind('space', function()
@@ -57,7 +65,13 @@ function love.update(dt)
   if focused then game:update(dt) end
 
   -- Bot update
-  if BOT_PLAY or DEBUG then bot_loader.update() end
+  if BOT_PLAY or DEBUG then
+    if SESSION_MODE == 'bot-match' then
+      bot_loaders.update()
+    else
+      bot_loader.update()
+    end
+  end
   if PCFINDER_PLAY or DEBUG then pc_finder.update() end
 end
 
@@ -163,7 +177,13 @@ function love.run()
 end
 
 function love.quit()
-  if BOT_PLAY then bot_loader.terminate() end
+  if BOT_PLAY then
+    if SESSION_MODE == 'bot-match' then
+      bot_loaders.terminate()
+    else
+      bot_loader.terminate()
+    end
+  end
   if PCFINDER_PLAY then
     pc_finder.terminate()
     -- pc_finder.shutdown()

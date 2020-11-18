@@ -7,10 +7,42 @@ SOFTDROP_CONSTANT = 300 -- coefficient
 DROP_COEFFICIENT = 256
 HOLD_ALLOWED = true
 NUM_PREVIEW = 6
+LINE_CLEAR_DELAY = 30 -- (frame)
+SPIN_MODE = 'tspinonly' -- disable / tspinonly / allspin
+
+-- Font --
 DEFAULT_FONT = 'firacode_retina.ttf'
 DEFAULT_FONT_SIZE = 20
-LINE_CLEAR_DELAY = 1 -- (frame)
-SPIN_MODE = 'tspinonly' -- disable / tspinonly / allspin
+MAJOR_FONT_SIZE = 50
+STAT_FONT_SIZE = 15
+
+-- Colors --
+SESSION_BACKGROUND_COLOR = { 10/255,  10/255,  10/255}
+PAUSE_BACKGROUND_COLOR   = {100/255, 100/255, 100/255}
+GRID_COLOR               = {100/255, 100/255, 100/255}
+BLOCK_COLORS = {
+  ['E'] = { 50/255,  50/255,  50/255},
+  ['B'] = {200/255, 200/255, 200/255},
+  ['S'] = {  0/255, 240/255,   0/255},
+  ['Z'] = {240/255,   0/255,   0/255},
+  ['L'] = {240/255, 160/255,   0/255},
+  ['J'] = {  0/255,   0/255, 240/255},
+  ['T'] = {160/255,   0/255, 240/255},
+  ['O'] = {240/255, 240/255,   0/255},
+  ['I'] = {  0/255, 240/255, 240/255},
+}
+BLOCK_ALPHA_COLORS = {
+  ['E'] = { 50/255,  50/255,  50/255, 0.4},
+  ['B'] = {200/255, 200/255, 200/255, 0.4},
+  ['S'] = {  0/255, 240/255,   0/255, 0.4},
+  ['Z'] = {240/255,   0/255,   0/255, 0.4},
+  ['L'] = {240/255, 160/255,   0/255, 0.4},
+  ['J'] = {  0/255,   0/255, 240/255, 0.4},
+  ['T'] = {160/255,   0/255, 240/255, 0.4},
+  ['O'] = {240/255, 240/255,   0/255, 0.4},
+  ['I'] = {  0/255, 240/255, 240/255, 0.4},
+}
+LOCK_COLOR = 'colored' -- mono / colored
 
 SESSION_NORMAL = 1
 SESSION_COUNTDOWN = 2
@@ -18,10 +50,10 @@ SESSION_END = 4
 GAME_NORMAL = 8
 GAME_WIN = 16
 GAME_LOSE = 32
-SESSION_MODE = 'match' -- analysis / match
-GAME_MODE = 'infinite' -- infinite / sprint
+SESSION_MODE = 'bot-match' -- analysis / match / bot-match
+GAME_MODE = 'infinite' -- infinite / sprint / bot
 SPRINT_LINES = 40
-HUMAN_INDEX = 1
+HUMAN_INDEX = 0
 NUM_PLAYERS = 2 -- not used
 
 -- Garbage --
@@ -33,8 +65,8 @@ DEFAULT_B2B_BONUS_LOG = 0.8
 
 -- Bot & PC Finder --
 BOT_PLAY = true
-PCFINDER_PLAY = true
-BOT_MOVE_DELAY = 20 -- (frame)
+PCFINDER_PLAY = false
+BOT_MOVE_DELAY = 1 -- (frame)
 
 NUM_BOT_PREVIEW = 14
 THINK_DURATION = 0.1
@@ -123,34 +155,6 @@ BOT_PARAMS = {
   -- 19, 0, 500, 0, 0,
   -- 200
 }
-
--- Colors --
-SESSION_BACKGROUND_COLOR = { 10/255,  10/255,  10/255}
-PAUSE_BACKGROUND_COLOR   = {100/255, 100/255, 100/255}
-GRID_COLOR               = {100/255, 100/255, 100/255}
-BLOCK_COLORS = {
-  ['E'] = { 50/255,  50/255,  50/255},
-  ['B'] = {200/255, 200/255, 200/255},
-  ['S'] = {  0/255, 240/255,   0/255},
-  ['Z'] = {240/255,   0/255,   0/255},
-  ['L'] = {240/255, 160/255,   0/255},
-  ['J'] = {  0/255,   0/255, 240/255},
-  ['T'] = {160/255,   0/255, 240/255},
-  ['O'] = {240/255, 240/255,   0/255},
-  ['I'] = {  0/255, 240/255, 240/255},
-}
-BLOCK_ALPHA_COLORS = {
-  ['E'] = { 50/255,  50/255,  50/255, 0.4},
-  ['B'] = {200/255, 200/255, 200/255, 0.4},
-  ['S'] = {  0/255, 240/255,   0/255, 0.4},
-  ['Z'] = {240/255,   0/255,   0/255, 0.4},
-  ['L'] = {240/255, 160/255,   0/255, 0.4},
-  ['J'] = {  0/255,   0/255, 240/255, 0.4},
-  ['T'] = {160/255,   0/255, 240/255, 0.4},
-  ['O'] = {240/255, 240/255,   0/255, 0.4},
-  ['I'] = {  0/255, 240/255, 240/255, 0.4},
-}
-LOCK_COLOR = 'mono' -- mono / colored
 
 -- Position --
 SESSION_STARTX = 0 -- game session positioning, include field, piece, stats, preview and hold (pixel)

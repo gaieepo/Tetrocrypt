@@ -35,6 +35,9 @@ function Session:enteredState()
   if SESSION_MODE == 'match' then
     l1 = Layout:new(self, HUMAN_INDEX, self.sstartx, self.sstarty)
     l2 = Layout:new(self, HUMAN_INDEX + 1, self.sstartx + 500, self.sstarty)
+  elseif SESSION_MODE == 'bot-match' then
+    l1 = Layout:new(self, HUMAN_INDEX + 1, self.sstartx, self.sstarty)
+    l2 = Layout:new(self, HUMAN_INDEX + 2, self.sstartx + 500, self.sstarty)
   elseif SESSION_MODE == 'analysis' then
     layout = Layout:new(self, HUMAN_INDEX, self.sstartx, self.sstarty)
   end
@@ -45,13 +48,9 @@ function Session:update(dt)
   self.timer:update(dt)
 
   -- Session Env
-  if input:pressed('auto') and DEBUG then
-    self.bot_play = true
-    self.pcfinder_play = true
-  end
   if input:released('auto') and DEBUG then
-    self.bot_play = false
-    self.pcfinder_play = false
+    self.bot_play = not self.bot_play
+    self.pcfinder_play = not self.bot_play
   end
 
   -- Count down
@@ -121,26 +120,26 @@ function Session:draw()
 
   -- Dead
   if self.session_status == SESSION_END then
-    local temp_font = love.graphics.newFont(DEFAULT_FONT, 50)
+    local major_font = love.graphics.newFont(DEFAULT_FONT, MAJOR_FONT_SIZE)
     love.graphics.setColor(1, 0, 0)
-    love.graphics.setFont(temp_font)
+    love.graphics.setFont(major_font)
     local gg_text = 'Game Over'
     love.graphics.print(gg_text,
                         GW / 2, GH / 2,
                         0, 1, 1,
-                        temp_font:getWidth(gg_text) / 2, temp_font:getHeight(gg_text) / 2)
+                        major_font:getWidth(gg_text) / 2, major_font:getHeight(gg_text) / 2)
     love.graphics.setFont(global_font)
   end
 
   -- Count down
   if self.counting_down_text ~= nil then
-    local temp_font = love.graphics.newFont(DEFAULT_FONT, 50)
+    local major_font = love.graphics.newFont(DEFAULT_FONT, MAJOR_FONT_SIZE)
     love.graphics.setColor(1, 1, 0)
-    love.graphics.setFont(temp_font)
+    love.graphics.setFont(major_font)
     love.graphics.print(self.counting_down_text,
                         GW / 2, GH / 2,
                         0, 1, 1,
-                        temp_font:getWidth(self.counting_down_text) / 2, temp_font:getHeight(self.counting_down_text) / 2)
+                        major_font:getWidth(self.counting_down_text) / 2, major_font:getHeight(self.counting_down_text) / 2)
     love.graphics.setFont(global_font)
   end
 end
