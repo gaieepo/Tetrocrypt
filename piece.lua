@@ -448,7 +448,7 @@ function Piece:updateBot()
       self.layout.field:convertBotStr(),
       self.layout.field.combo_count + 1,
       self.layout.field.b2b_count,
-      0
+      self.layout.field:totalGarbage()
       )
     bot_loaders.think(self.lindex, function()
       self.thinkFinished = true
@@ -464,7 +464,7 @@ function Piece:updateBot()
       self.layout.field:convertBotStr(),
       self.layout.field.combo_count + 1,
       self.layout.field.b2b_count,
-      0
+      self.layout.field:totalGarbage()
       )
     bot_loader.think(function()
       self.thinkFinished = true

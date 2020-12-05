@@ -7,8 +7,20 @@ SOFTDROP_CONSTANT = 300 -- coefficient
 DROP_COEFFICIENT = 256
 HOLD_ALLOWED = true
 NUM_PREVIEW = 6
-LINE_CLEAR_DELAY = 30 -- (frame)
+LINE_CLEAR_DELAY = 1 -- (frame)
 SPIN_MODE = 'tspinonly' -- disable / tspinonly / allspin
+
+SESSION_NORMAL = 1
+SESSION_COUNTDOWN = 2
+SESSION_END = 4
+GAME_NORMAL = 8
+GAME_WIN = 16
+GAME_LOSE = 32
+SESSION_MODE = 'bot-match' -- analysis / match / bot-match
+GAME_MODE = 'infinite' -- infinite / sprint / bot
+SPRINT_LINES = 40
+HUMAN_INDEX = 0
+NUM_PLAYERS = 2 -- not used
 
 -- Font --
 DEFAULT_FONT = 'firacode_retina.ttf'
@@ -43,18 +55,9 @@ BLOCK_ALPHA_COLORS = {
   ['I'] = {  0/255, 240/255, 240/255, 0.4},
 }
 LOCK_COLOR = 'colored' -- mono / colored
-
-SESSION_NORMAL = 1
-SESSION_COUNTDOWN = 2
-SESSION_END = 4
-GAME_NORMAL = 8
-GAME_WIN = 16
-GAME_LOSE = 32
-SESSION_MODE = 'bot-match' -- analysis / match / bot-match
-GAME_MODE = 'infinite' -- infinite / sprint / bot
-SPRINT_LINES = 40
-HUMAN_INDEX = 0
-NUM_PLAYERS = 2 -- not used
+BAR_DEFAULT_COLOR = {0, 1, 0} -- green
+BAR_WARN_COLOR    = {1, 1, 0} -- yellow
+BAR_URGENT_COLOR  = {1, 0, 0} -- red
 
 -- Garbage --
 PC_GARBAGE_BONUS = 7
@@ -167,6 +170,9 @@ H_GRIDS = 10
 V_GRIDS = 20
 X_GRIDS = 20
 DISPLAY_HEIGHT = 24
+BAR_WIDTH = 10
+BAR_WARN_HEIGHT = 10
+BAR_URGENT_HEIGHT = 15
 
 -- Hold
 HOLD_SX_OFFSET = 50 -- (pixel)

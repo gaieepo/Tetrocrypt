@@ -22,7 +22,6 @@ function Field:initialize(layout, fsx, fsy)
   self.trigger_update = false
   self.field_updated = true -- initial true for bot update sequence
   self.clearing = false
-  self.incoming = 0
   self.fstartx = fsx + FIELD_SX_OFFSET
   self.fstarty = fsy + FIELD_SY_OFFSET
   self.board = {}
@@ -191,6 +190,43 @@ function Field:draw()
   love.graphics.setColor(1, 0, 0)
   love.graphics.line(self.fstartx, self.fstarty - V_GRIDS * GRID_SIZE,
                      self.fstartx + H_GRIDS * GRID_SIZE, self.fstarty - V_GRIDS * GRID_SIZE)
+
+  -- Combo / B2B / Incoming
+  if SESSION_MODE ~= 'analysis' then
+    love.graphics.setColor(1, 1, 1)
+
+    -- combo
+    if self.combo_count > 0 then
+      love.graphics.print('Combo ' .. self.combo_count, self.fstartx - 5 * GRID_SIZE, self.fstarty - 10 * GRID_SIZE)
+    end
+
+    -- b2b
+    if self.b2b_count > 1 then
+      love.graphics.print('B2B ' .. self.b2b_count, self.fstartx - 5  * GRID_SIZE, self.fstarty - 7 * GRID_SIZE)
+    end
+  end
+
+  -- Inncoming garbage bar
+  love.graphics.setColor(GRID_COLOR)
+  love.graphics.rectangle('line',
+                          self.fstartx + H_GRIDS * GRID_SIZE, self.fstarty - DISPLAY_HEIGHT * GRID_SIZE,
+                          BAR_WIDTH, DISPLAY_HEIGHT * GRID_SIZE)
+  local bar_color = BAR_DEFAULT_COLOR
+  local total_garbage = self:totalGarbage()
+  if total_garbage > BAR_URGENT_HEIGHT then
+    bar_color = BAR_URGENT_COLOR
+  elseif total_garbage > BAR_WARN_HEIGHT then
+    bar_color = BAR_WARN_COLOR
+  else
+    bar_color = BAR_DEFAULT_COLOR
+  end
+  if total_garbage > 0 then
+    love.graphics.setColor(bar_color)
+    love.graphics.rectangle('fill',
+                            self.fstartx + H_GRIDS * GRID_SIZE, self.fstarty - total_garbage * GRID_SIZE,
+                            BAR_WIDTH, total_garbage * GRID_SIZE)
+  end
+  -- love.graphics.print(self:totalGarbage(), self.fstartx - 5  * GRID_SIZE, self.fstarty - 3 * GRID_SIZE)
 end
 
 function Field:destroy()
@@ -269,6 +305,10 @@ function Field:fallStack()
   end
 end
 
+function Field:totalGarbage()
+  return fn.sum(self.incoming_garbage)
+end
+
 function Field:spawnGarbage()
   while not table.empty(self.incoming_garbage) do
     lines = fn.pop(self.incoming_garbage)
@@ -314,7 +354,7 @@ function Field:calculateB2bBonus(input_b2b)
   local b2b_bonus_log = DEFAULT_B2B_BONUS_LOG
   return math.floor(b2b_bonus_coeff * (
     math.floor(1 + math.log(1 + (b2b - 1) * b2b_bonus_log)) +
-    (b2b - 1 == 1 and 0 or ((1 + math.log(1 + (b2b - 1) * b2b_bonus_log) % 1) / 3))
+    ((b2b - 1) == 1 and 0 or ((1 + math.log(1 + (b2b - 1) * b2b_bonus_log) % 1) / 3))
   ))
 end
 
