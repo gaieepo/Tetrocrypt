@@ -386,7 +386,7 @@ function Field:calculateComboBonus(input_combo)
   elseif combo < 12 then
     return _combo_table[combo]
   else
-    return _combo_table[#combo_table]
+    return _combo_table[#_combo_table]
   end
 end
 

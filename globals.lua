@@ -7,7 +7,7 @@ SOFTDROP_CONSTANT = 300 -- coefficient
 DROP_COEFFICIENT = 256
 HOLD_ALLOWED = true
 NUM_PREVIEW = 6
-LINE_CLEAR_DELAY = 1 -- (frame)
+LINE_CLEAR_DELAY = 1 -- (frame) default 1
 SPIN_MODE = 'tspinonly' -- disable / tspinonly / allspin
 
 SESSION_NORMAL = 1
@@ -16,7 +16,7 @@ SESSION_END = 4
 GAME_NORMAL = 8
 GAME_WIN = 16
 GAME_LOSE = 32
-SESSION_MODE = 'bot-match' -- analysis / match / bot-match
+SESSION_MODE = 'analysis' -- analysis / match / bot-match
 GAME_MODE = 'infinite' -- infinite / sprint / bot
 SPRINT_LINES = 40
 HUMAN_INDEX = 0
@@ -69,10 +69,10 @@ DEFAULT_B2B_BONUS_LOG = 0.8
 -- Bot & PC Finder --
 BOT_PLAY = true
 PCFINDER_PLAY = false
-BOT_MOVE_DELAY = 1 -- (frame)
+BOT_MOVE_DELAY = 1 -- (frame) default 1
 
 NUM_BOT_PREVIEW = 14
-THINK_DURATION = 0.1
+THINK_DURATION = 0.1 -- (second) default 0.1
 BOT_HOLDALLOWED = true
 BOT_ALLSPIN = false
 BOT_TSDONLY = false
@@ -103,18 +103,22 @@ BOT_PARAMS = {
   -- 0,
 
   -- TSPIN + B2B (baseline)
-  16, 9, 11, 17, 17,
-  25, 39, 2, 12, 19,
-  7, 24, 18, 7, 14,
-  19, 99, 14, 19, 0,
-  0,
+  ['TSPINB2B'] = {
+    16, 9, 11, 17, 17,
+    25, 39, 2, 12, 19,
+    7, 24, 18, 7, 14,
+    19, 99, 14, 19, 0,
+    0,
+  },
 
   -- TSPINPLUS
-  -- 13, 9, 17, 10, 29,
-  -- 25, 39, 2, 12, 19,
-  -- 7, 24, 21, 16, 14,
-  -- 19, 0, 30, 0, 24,
-  -- 0,
+  ['TSPINPLUS'] = {
+    13, 9, 17, 10, 29,
+    25, 39, 2, 12, 19,
+    7, 24, 21, 16, 14,
+    19, 0, 30, 0, 24,
+    0,
+  },
 
   -- TST
   -- 16, 9, 11, 17, 500,
@@ -131,32 +135,47 @@ BOT_PARAMS = {
   -- 0,
 
   -- TSD20 (not exactly)
-  -- 0, 0, 0, 500, 0,
-  -- 0, 0, 2, 12, 19,
-  -- 7, 74, 0, 0, 0,
-  -- 19, 500, 0, 0, 0,
-  -- 0,
+  ['TSD20'] = {
+    0, 0, 0, 500, 0,
+    0, 0, 2, 12, 19,
+    7, 74, 0, 0, 0,
+    19, 500, 0, 0, 0,
+    0,
+  },
 
-  -- JSTSPIN (baseline)
-  -- 13, 9, 17, 10, 29,
-  -- 25, 39, 2, 12, 19,
-  -- 7, 24, 21, 16, 14,
-  -- 19, 0, 0, 0, 0,
-  -- 200,
+  -- baseline
+  ['JSTSPIN'] = {
+    13, 9, 17, 10, 29,
+    25, 39, 2, 12, 19,
+    7, 24, 21, 16, 14,
+    19, 0, 0, 0, 0,
+    200,
+  },
 
-  -- JSREN
-  -- 13, 9, 17, 10, -271,
-  -- 25, 39, 2, 12, 19,
-  -- 7, -276, 21, 16, 11,
-  -- 19, 0, 0, 0, 0,
-  -- 200,
+  ['JSTSPINCOMBO'] = {
+    13, 9, 17, 10, 29,
+    25, 39, 2, 12, 19,
+    7, 24, 21, 16, 14,
+    19, 0, 100, 0, 0,
+    200,
+  },
 
-  -- RENTRAIN (combo practice)
-  -- 13, 9, 17, 10, -300,
-  -- 25, 39, 2, 12, 19,
-  -- 7, -300, 21, 16, 9,
-  -- 19, 0, 500, 0, 0,
-  -- 200
+  ['JSREN'] = {
+    13, 9, 17, 10, -271,
+    25, 39, 2, 12, 19,
+    7, -276, 21, 16, 11,
+    19, 0, 0, 0, 0,
+    200,
+  },
+
+  -- combo practice
+  ['RENTRAIN'] = {
+    13, 9, 17, 10, -300,
+    25, 39, 2, 12, 19,
+    7, -300, 21, 16, 9,
+    19, 0, 500, 0, 0,
+    200,
+  }
 }
 
 -- Position --

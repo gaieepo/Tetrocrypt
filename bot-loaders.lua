@@ -59,8 +59,8 @@ else
   end
 
   function loaders.start()
-    bot1.configure(BOT_PARAMS, BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
-    bot2.configure(BOT_PARAMS, BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
+    bot1.configure(BOT_PARAMS['TSPINB2B'], BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
+    bot2.configure(BOT_PARAMS['JSTSPINCOMBO'], BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
 
     local thread1 = love.thread.newThread(pathToThisFile)
     thread1:start(1)

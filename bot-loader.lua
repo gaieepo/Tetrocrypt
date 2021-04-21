@@ -48,7 +48,7 @@ else
   end
 
   function loader.start()
-    bot.configure(BOT_PARAMS, BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
+    bot.configure(BOT_PARAMS['TSPINB2B'], BOT_HOLDALLOWED, BOT_ALLSPIN, BOT_TSDONLY, BOT_SEARCHWIDTH)
 
     local thread = love.thread.newThread(pathToThisFile)
     thread:start(true)
